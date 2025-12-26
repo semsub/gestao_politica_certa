@@ -1,91 +1,66 @@
 import os
 from pathlib import Path
-import dj_database_url
 
-# Define a pasta raiz do projeto
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-luxo-pa-2026')
-
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
-
-ALLOWED_HOSTS = ['*']
+# ... (mantenha suas configurações de banco de dados e SECRET_KEY)
 
 INSTALLED_APPS = [
+    'jazzmin',  # DEVE ser o primeiro
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'corsheaders',
     'contas',
     'liderancas',
     'municipios',
     'campanhas',
 ]
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-ROOT_URLCONF = 'core.urls'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
+# Configuração de Luxo do Jazzmin
+JAZZMIN_SETTINGS = {
+    "site_title": "Gestão Política PA",
+    "site_header": "Gestão Política",
+    "site_brand": "COMANDO ESTRATÉGICO",
+    "welcome_sign": "Painel de Controle de Inteligência Política",
+    "copyright": "Gestão Política PA 2025",
+    "user_avatar": None,
+    "topmenu_links": [
+        {"name": "Início", "url": "admin:index"},
+        {"name": "Suporte", "url": "https://wa.me/seu-numero", "new_window": True},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "contas.Usuario": "fas fa-user-tie",
+        "liderancas.Lideranca": "fas fa-bullhorn",
+        "municipios.Municipio": "fas fa-map-marked-alt",
     },
-]
-
-WSGI_APPLICATION = 'core.wsgi.application'
-
-# Banco de Dados para o Render (Postgres) e Local (Sqlite)
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f'sqlite:///{os.path.join(BASE_DIR, "db.sqlite3")}',
-        conn_max_age=600
-    )
+    "order_with_respect_to": ["liderancas", "municipios", "contas"],
 }
 
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
-]
+JAZZMIN_UI_TWEAKS = {
+    "theme": "flatly",  # Tema minimalista e profissional
+    "dark_mode_theme": "darkly",
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "accent": "accent-primary",
+    "navbar": "navbar-dark",
+    "no_navbar_border": True,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+}
 
-# Importante: Aponte para o seu modelo de usuário customizado se existir
-# AUTH_USER_MODEL = 'contas.Usuario'
-
-LANGUAGE_CODE = 'pt-br'
-TIME_ZONE = 'America/Belem'
-USE_I18N = True
-USE_TZ = True
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-CORS_ALLOW_ALL_ORIGINS = True
-
-# Adicione isso no final do arquivo
 AUTH_USER_MODEL = 'contas.Usuario'
