@@ -7,17 +7,17 @@ class Candidato(models.Model):
     numero = models.CharField(max_length=10, verbose_name="Número")
     partido = models.CharField(max_length=20, verbose_name="Partido")
     cargo = models.CharField(max_length=100, verbose_name="Cargo", blank=True, null=True)
-    ativo = models.BooleanField(default=True, verbose_name="Ativo")
+    meta_votos_total = models.PositiveIntegerField(default=0, verbose_name="Meta Geral de Votos")
 
     class Meta:
         verbose_name = "Candidato"
         verbose_name_plural = "Candidatos"
 
     def __str__(self):
-        return self.nome_urna
+        return f"{self.nome_urna} ({self.numero})"
 
 @receiver(post_save, sender=Candidato)
-def auto_autorizar_candidato(sender, instance, created, **kwargs):
+def criar_acesso_candidato(sender, instance, created, **kwargs):
     if created:
         from contas.models import Usuario
         username = instance.nome_urna.lower().replace(" ", "")
