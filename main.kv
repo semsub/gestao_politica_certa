@@ -1,0 +1,161 @@
+#:import hex kivy.utils.get_color_from_hex
+
+ScreenManager:
+    LoginScreen:
+    DashboardScreen:
+
+<LoginScreen>:
+    name: 'login'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: hex("#001529")
+        padding: "40dp"
+        spacing: "20dp"
+        
+        MDLabel:
+            text: "COMANDO ESTRATÉGICO\\nPARÁ 2026"
+            halign: "center"
+            font_style: "H4"
+            theme_text_color: "Custom"
+            text_color: hex("#D4AF37") # Dourado
+            bold: True
+
+        MDTextField:
+            id: email
+            hint_text: "E-mail de Liderança"
+            mode: "fill"
+            fill_color_normal: 1, 1, 1, .05
+            icon_right: "account-star"
+
+        MDTextField:
+            id: senha
+            hint_text: "Senha de Acesso"
+            password: True
+            mode: "fill"
+            fill_color_normal: 1, 1, 1, .05
+            icon_right: "lock-check"
+
+        MDRaisedButton:
+            text: "ENTRAR NO SISTEMA"
+            size_hint_x: 1
+            height: "56dp"
+            md_bg_color: hex("#D4AF37")
+            text_color: hex("#001529")
+            on_release: root.logar()
+
+<DashboardScreen>:
+    name: 'dashboard'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: hex("#F4F6F9")
+
+        MDTopAppBar:
+            title: "Painel da Liderança"
+            md_bg_color: hex("#002366")
+            elevation: 4
+
+        MDScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                padding: "20dp"
+                spacing: "20dp"
+                size_hint_y: None
+                height: self.minimum_height
+
+                MDCard:
+                    size_hint_y: None
+                    height: "160dp"
+                    radius: 15
+                    padding: "20dp"
+                    orientation: 'vertical'
+                    MDLabel:
+                        text: "Progresso de Metas"
+                        bold: True
+                        font_style: "H6"
+                    MDProgressBar:
+                        value: 68
+                        color: hex("#D4AF37")
+                    MDLabel:
+                        text: "6.800 / 10.000 Votos"
+                        halign: "right"
+                        theme_text_color: "Hint"#:import hex kivy.utils.get_color_from_hex
+
+ScreenManager:
+    LoginScreen:
+    DashboardScreen:
+
+<LoginScreen>:
+    name: 'login'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: hex("#001529")
+        padding: "40dp"
+        spacing: "20dp"
+        
+        MDLabel:
+            text: "COMANDO ESTRATÉGICO\\nPARÁ 2026"
+            halign: "center"
+            font_style: "H4"
+            theme_text_color: "Custom"
+            text_color: hex("#D4AF37") # Dourado
+            bold: True
+
+        MDTextField:
+            id: email
+            hint_text: "E-mail de Liderança"
+            mode: "fill"
+            fill_color_normal: 1, 1, 1, .05
+            icon_right: "account-star"
+
+        MDTextField:
+            id: senha
+            hint_text: "Senha de Acesso"
+            password: True
+            mode: "fill"
+            fill_color_normal: 1, 1, 1, .05
+            icon_right: "lock-check"
+
+        MDRaisedButton:
+            text: "ENTRAR NO SISTEMA"
+            size_hint_x: 1
+            height: "56dp"
+            md_bg_color: hex("#D4AF37")
+            text_color: hex("#001529")
+            on_release: root.logar()
+
+<DashboardScreen>:
+    name: 'dashboard'
+    MDBoxLayout:
+        orientation: 'vertical'
+        md_bg_color: hex("#F4F6F9")
+
+        MDTopAppBar:
+            title: "Painel da Liderança"
+            md_bg_color: hex("#002366")
+            elevation: 4
+
+        MDScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                padding: "20dp"
+                spacing: "20dp"
+                size_hint_y: None
+                height: self.minimum_height
+
+                MDCard:
+                    size_hint_y: None
+                    height: "160dp"
+                    radius: 15
+                    padding: "20dp"
+                    orientation: 'vertical'
+                    MDLabel:
+                        text: "Progresso de Metas"
+                        bold: True
+                        font_style: "H6"
+                    MDProgressBar:
+                        value: 68
+                        color: hex("#D4AF37")
+                    MDLabel:
+                        text: "6.800 / 10.000 Votos"
+                        halign: "right"
+                        theme_text_color: "Hint"

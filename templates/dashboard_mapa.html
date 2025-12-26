@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>SISTEMA DE INTELIGÊNCIA - PA</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map { height: 85vh; width: 100%; border: 4px solid #002366; border-radius: 10px; }
+        .header { background: #002366; color: white; padding: 15px; text-align: center; }
+        .stats-panel { display: flex; justify-content: space-around; padding: 20px; background: #eee; }
+        .stat-card { background: white; padding: 15px; border-radius: 8px; width: 30%; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>COMANDO PARÁ - GESTÃO POLÍTICA</h1></div>
+    <div class="stats-panel">
+        <div class="stat-card"><h3>TOTAL DE APOIADORES</h3><h2 id="total-votos">0</h2></div>
+        <div class="stat-card"><h3>MUNICÍPIOS ATIVOS</h3><h2>PA - Belém / Interior</h2></div>
+        <div class="stat-card"><h3>PROJEÇÃO 2026</h3><h2>100.000+</h2></div>
+    </div>
+    <div id="map"></div>
+
+    <script>
+        var map = L.map('map').setView([-1.4558, -48.4902], 6); // Foco no Pará
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        async function carregarMapa() {
+            const token = "SEU_TOKEN_AQUI"; // Idealmente capturado do login
+            const response = await fetch('/api/v1/mapa/');
+            const pontos = await response.json();
+            
+            document.getElementById('total-votos').innerText = pontos.length;
+
+            pontos.forEach(ponto => {
+                L.circle([ponto.latitude, ponto.longitude], {
+                    color: 'blue', fillColor: '#0033ff', fillOpacity: 0.5, radius: 1000
+                }).addTo(map).bindPopup("<b>Liderança:</b> " + ponto.eleitor_nome);
+            });
+        }
+        carregarMapa();
+    </script>
+</body>
+</html>
