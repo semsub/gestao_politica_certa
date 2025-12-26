@@ -1,8 +1,9 @@
 django>=5.0
 django-cors-headers
-django-rest-framework
+djangorestframework
 djangorestframework-simplejwt
 gunicorn
 psycopg2-binary
 requests
 whitenoise
+dj-database-url
