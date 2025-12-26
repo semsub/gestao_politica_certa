@@ -4,34 +4,27 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SEGURANÇA: Mantenha sua chave ou use variável de ambiente
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-sua-chave-aqui')
-
-DEBUG = True # Mude para False em produção
-
+DEBUG = True
 ALLOWED_HOSTS = ['*']
 
-# --- APPS CONFIGURATION ---
 INSTALLED_APPS = [
-    'jazzmin',  # Visual Profissional (Deve ser o 1º)
+    'jazzmin',  # Primeiro da lista para o design de luxo
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Seus Apps
     'contas',
     'liderancas',
     'municipios',
     'campanhas',
 ]
 
-# --- MIDDLEWARES (CORRIGE OS ERROS E408, E409, E410) ---
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Para arquivos estáticos no Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -42,7 +35,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
-# --- TEMPLATES (CORRIGE O ERRO E403) ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -59,37 +51,24 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'core.wsgi.application'
-
-# --- DATABASE CONFIG ---
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
     )
 }
 
-# --- AUTHENTICATION ---
 AUTH_USER_MODEL = 'contas.Usuario'
 
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
-
-# --- INTERNATIONALIZATION ---
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Belem'
 USE_I18N = True
 USE_TZ = True
 
-# --- STATIC FILES ---
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --- JAZZMIN SETTINGS (LUXO E MINIMALISMO) ---
+# Configuração Visual Jazzmin (Interface Executiva)
 JAZZMIN_SETTINGS = {
     "site_title": "Gestão Política PA",
     "site_header": "Comando Estratégico",
