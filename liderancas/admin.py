@@ -6,8 +6,7 @@ class LiderancaAdmin(admin.ModelAdmin):
     list_display = ('nome', 'municipio', 'meta_votos', 'nivel')
     list_filter = ('municipio', 'nivel')
     search_fields = ('nome', 'telefone')
-    # Facilita edição rápida no celular
-    list_editable = ('meta_votos',) 
+    list_editable = ('meta_votos', 'nivel')
 
 @admin.register(AtendimentoSocial)
 class AtendimentoAdmin(admin.ModelAdmin):

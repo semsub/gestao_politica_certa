@@ -4,12 +4,12 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-chave-viva-pa-2025')
-DEBUG = False # Mantenha False para produção no Render
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-pa-2025-viva')
+DEBUG = True 
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    'jazzmin',  # Essencial ser o primeiro para o visual
+    'jazzmin',  # Visual de luxo primeiro
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -24,7 +24,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', # Serve o CSS no celular/Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -35,6 +35,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
+# --- CORREÇÃO DO ERRO E403 AQUI ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -59,7 +60,6 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'contas.Usuario'
 
-# Idioma e Hora local do Pará
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Belem'
 USE_I18N = True
@@ -69,17 +69,16 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --- CONFIGURAÇÃO JAZZMIN (INTERFACE DE APLICATIVO) ---
+# --- DESIGN DE APP PROFISSIONAL ---
 JAZZMIN_SETTINGS = {
     "site_title": "Gestão Política PA",
     "site_header": "Comando PA",
     "site_brand": "GESTOR PRO",
-    "site_logo_classes": "img-circle",
     "welcome_sign": "Painel Estratégico Pará",
     "copyright": "Gestão Política 2025",
     "search_model": ["liderancas.Lideranca"],
     "show_sidebar": True,
-    "navigation_expanded": False, # Melhora visual no celular
+    "navigation_expanded": False,
     "icons": {
         "auth": "fas fa-users-cog",
         "contas.Usuario": "fas fa-user-shield",
@@ -90,19 +89,9 @@ JAZZMIN_SETTINGS = {
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "theme": "lumen", # Tema limpo, branco e profissional
-    "dark_mode_theme": None,
+    "theme": "lumen", 
     "navbar_fixed": True,
     "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-primary",
-    "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success"
-    }
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
