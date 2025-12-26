@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Campanha
+from .models import Candidato
 
-@admin.register(Campanha)
-class CampanhaAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'descricao', 'criado_em', 'atualizado_em')
-    readonly_fields = ('criado_em', 'atualizado_em')
+@admin.register(Candidato)
+class CandidatoAdmin(admin.ModelAdmin):
+    list_display = ('nome_urna', 'numero', 'partido', 'ativo')
+    list_filter = ('ativo',)

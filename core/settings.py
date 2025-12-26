@@ -5,11 +5,11 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-pa-2025-viva')
-DEBUG = True 
+DEBUG = False 
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    'jazzmin',  # Visual de luxo primeiro
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -35,7 +35,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
-# --- CORREÇÃO DO ERRO E403 AQUI ---
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -59,7 +58,6 @@ DATABASES = {
 }
 
 AUTH_USER_MODEL = 'contas.Usuario'
-
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Belem'
 USE_I18N = True
@@ -69,27 +67,32 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# --- DESIGN DE APP PROFISSIONAL ---
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# --- CONFIGURAÇÃO JAZZMIN (INTERFACE PROFISSIONAL) ---
 JAZZMIN_SETTINGS = {
-    "site_title": "Gestão Política PA",
-    "site_header": "Comando PA",
-    "site_brand": "GESTOR PRO",
-    "welcome_sign": "Painel Estratégico Pará",
-    "copyright": "Gestão Política 2025",
-    "search_model": ["liderancas.Lideranca"],
+    "site_title": "GESTOR POLÍTICO PRO",
+    "site_header": "Comando Estratégico",
+    "site_brand": "SISTEMA ELEITORAL",
+    "welcome_sign": "Centro de Inteligência Eleitoral",
+    "copyright": "Gestão Política PA 2025",
+    "user_avatar": None,
     "show_sidebar": True,
     "navigation_expanded": False,
+    "order_with_respect_to": ["campanhas", "liderancas", "municipios", "contas"],
     "icons": {
         "auth": "fas fa-users-cog",
         "contas.Usuario": "fas fa-user-shield",
+        "campanhas.Candidato": "fas fa-star",
         "liderancas.Lideranca": "fas fa-user-tie",
         "liderancas.AtendimentoSocial": "fas fa-hand-holding-heart",
-        "municipios.Municipio": "fas fa-map-marked-alt",
+        "municipios.Municipio": "fas fa-city",
     },
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "theme": "lumen", 
+    "theme": "lumen",
     "navbar_fixed": True,
     "sidebar_fixed": True,
 }
