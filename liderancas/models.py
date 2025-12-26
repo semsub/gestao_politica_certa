@@ -9,18 +9,16 @@ class Auditoria(models.Model):
 class Familia(Auditoria):
     responsavel = models.CharField(max_length=255)
     municipio = models.ForeignKey('municipios.Municipio', on_delete=models.CASCADE)
-    endereco = models.CharField(max_length=255)
-    contato = models.CharField(max_length=50)
     votos_estimados = models.IntegerField(default=1)
-    necessidades = models.TextField(blank=True, verbose_name="Demandas da Família")
-
-    def __str__(self): return f"{self.responsavel} - {self.municipio}"
+    necessidades = models.TextField(blank=True)
+    def __str__(self): return self.responsavel
 
 class AtendimentoSocial(Auditoria):
-    TIPO_CHOICES = [('SAUDE', 'Saúde/Exame'), ('CESTA', 'Cesta Básica'), ('JURIDICO', 'Apoio Jurídico')]
-    familia = models.ForeignKey(Familia, on_delete=models.CASCADE, related_name='atendimentos')
-    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
-    descricao = models.TextField()
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
+    familia = models.ForeignKey(Familia, on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=50)
     concluido = models.BooleanField(default=False)
+
+class Lideranca(Auditoria):
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    meta_votos = models.IntegerField(default=1000)
+    regiao = models.CharField(max_length=100)
