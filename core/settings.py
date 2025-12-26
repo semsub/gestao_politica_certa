@@ -1,3 +1,4 @@
+
 import os
 from pathlib import Path
 import dj_database_url
@@ -5,7 +6,7 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-pa-2025-viva')
-DEBUG = False 
+DEBUG = True 
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -34,6 +35,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
+AUTH_USER_MODEL = 'contas.Usuario'
 
 TEMPLATES = [
     {
@@ -57,7 +59,6 @@ DATABASES = {
     )
 }
 
-AUTH_USER_MODEL = 'contas.Usuario'
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Belem'
 USE_I18N = True
@@ -67,27 +68,24 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# --- CONFIGURAÇÃO JAZZMIN (INTERFACE PROFISSIONAL) ---
+# --- JAZZMIN: O VISUAL DE LUXO ---
 JAZZMIN_SETTINGS = {
     "site_title": "GESTOR POLÍTICO PRO",
     "site_header": "Comando Estratégico",
-    "site_brand": "SISTEMA ELEITORAL",
-    "welcome_sign": "Centro de Inteligência Eleitoral",
+    "site_brand": "GESTOR PA",
+    "welcome_sign": "Painel de Inteligência Eleitoral",
     "copyright": "Gestão Política PA 2025",
-    "user_avatar": None,
+    "search_model": ["liderancas.Lideranca"],
     "show_sidebar": True,
     "navigation_expanded": False,
     "order_with_respect_to": ["campanhas", "liderancas", "municipios", "contas"],
     "icons": {
         "auth": "fas fa-users-cog",
         "contas.Usuario": "fas fa-user-shield",
-        "campanhas.Candidato": "fas fa-star",
+        "campanhas.Candidato": "fas fa-id-card",
         "liderancas.Lideranca": "fas fa-user-tie",
         "liderancas.AtendimentoSocial": "fas fa-hand-holding-heart",
-        "municipios.Municipio": "fas fa-city",
+        "municipios.Municipio": "fas fa-map-marked-alt",
     },
 }
 
@@ -96,5 +94,3 @@ JAZZMIN_UI_TWEAKS = {
     "navbar_fixed": True,
     "sidebar_fixed": True,
 }
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
