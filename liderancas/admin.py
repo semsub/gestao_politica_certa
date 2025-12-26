@@ -3,14 +3,13 @@ from .models import Lideranca, AtendimentoSocial
 
 @admin.register(Lideranca)
 class LiderancaAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'municipio', 'nivel', 'meta_votos', 'telefone')
-    list_filter = ('nivel', 'municipio')
+    list_display = ('nome', 'municipio', 'meta_votos', 'nivel')
+    list_filter = ('municipio', 'nivel')
     search_fields = ('nome', 'telefone')
-    list_editable = ('meta_votos', 'nivel')
-    list_per_page = 25
+    # Facilita edição rápida no celular
+    list_editable = ('meta_votos',) 
 
 @admin.register(AtendimentoSocial)
 class AtendimentoAdmin(admin.ModelAdmin):
-    list_display = ('lideranca', 'status')
-    list_filter = ('status',)
-    search_fields = ('lideranca__nome', 'pedido')
+    list_display = ('lideranca', 'concluido', 'data_registro')
+    list_filter = ('concluido',)
