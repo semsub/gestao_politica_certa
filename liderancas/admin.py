@@ -1,6 +1,18 @@
 from django.contrib import admin
-from .models import Familia, AtendimentoSocial, Lideranca
+from .models import Lideranca, AtendimentoSocial
 
-admin.site.register(Familia)
-admin.site.register(AtendimentoSocial)
-admin.site.register(Lideranca)
+@admin.register(Lideranca)
+class LiderancaAdmin(admin.ModelAdmin):
+    # Removidos campos que podem causar conflito, mantendo o essencial e luxuoso
+    list_display = ('nome', 'municipio', 'nivel', 'meta_votos', 'telefone')
+    list_filter = ('nivel', 'municipio')
+    search_fields = ('nome', 'telefone')
+    list_editable = ('meta_votos', 'nivel')
+    list_per_page = 25
+
+@admin.register(AtendimentoSocial)
+class AtendimentoAdmin(admin.ModelAdmin):
+    # Corrigido: Removida a referência ao campo 'data_solicitacao' que não existe no model
+    list_display = ('lideranca', 'status')
+    list_filter = ('status',)
+    search_fields = ('lideranca__nome', 'pedido')

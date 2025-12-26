@@ -1,66 +1,113 @@
 import os
 from pathlib import Path
+import dj_database_url
 
-# ... (mantenha suas configurações de banco de dados e SECRET_KEY)
+BASE_DIR = Path(__file__).resolve().parent.parent
 
+# SEGURANÇA: Mantenha sua chave ou use variável de ambiente
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-sua-chave-aqui')
+
+DEBUG = True # Mude para False em produção
+
+ALLOWED_HOSTS = ['*']
+
+# --- APPS CONFIGURATION ---
 INSTALLED_APPS = [
-    'jazzmin',  # DEVE ser o primeiro
+    'jazzmin',  # Visual Profissional (Deve ser o 1º)
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Seus Apps
     'contas',
     'liderancas',
     'municipios',
     'campanhas',
 ]
 
-# Configuração de Luxo do Jazzmin
+# --- MIDDLEWARES (CORRIGE OS ERROS E408, E409, E410) ---
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Para arquivos estáticos no Render
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'core.urls'
+
+# --- TEMPLATES (CORRIGE O ERRO E403) ---
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'core.wsgi.application'
+
+# --- DATABASE CONFIG ---
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+    )
+}
+
+# --- AUTHENTICATION ---
+AUTH_USER_MODEL = 'contas.Usuario'
+
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
+# --- INTERNATIONALIZATION ---
+LANGUAGE_CODE = 'pt-br'
+TIME_ZONE = 'America/Belem'
+USE_I18N = True
+USE_TZ = True
+
+# --- STATIC FILES ---
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# --- JAZZMIN SETTINGS (LUXO E MINIMALISMO) ---
 JAZZMIN_SETTINGS = {
     "site_title": "Gestão Política PA",
-    "site_header": "Gestão Política",
-    "site_brand": "COMANDO ESTRATÉGICO",
-    "welcome_sign": "Painel de Controle de Inteligência Política",
+    "site_header": "Comando Estratégico",
+    "site_brand": "INTELIGÊNCIA POLÍTICA",
+    "welcome_sign": "Painel de Gestão de Alta Performance",
     "copyright": "Gestão Política PA 2025",
-    "user_avatar": None,
-    "topmenu_links": [
-        {"name": "Início", "url": "admin:index"},
-        {"name": "Suporte", "url": "https://wa.me/seu-numero", "new_window": True},
-    ],
-    "show_sidebar": True,
-    "navigation_expanded": True,
     "icons": {
         "auth": "fas fa-users-cog",
-        "contas.Usuario": "fas fa-user-tie",
-        "liderancas.Lideranca": "fas fa-bullhorn",
-        "municipios.Municipio": "fas fa-map-marked-alt",
+        "contas.Usuario": "fas fa-user-shield",
+        "liderancas.Lideranca": "fas fa-users",
+        "municipios.Municipio": "fas fa-city",
     },
-    "order_with_respect_to": ["liderancas", "municipios", "contas"],
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "theme": "flatly",  # Tema minimalista e profissional
-    "dark_mode_theme": "darkly",
-    "navbar_small_text": False,
-    "footer_small_text": False,
-    "body_small_text": False,
-    "brand_small_text": False,
-    "accent": "accent-primary",
-    "navbar": "navbar-dark",
-    "no_navbar_border": True,
+    "theme": "flatly",
     "navbar_fixed": True,
-    "layout_boxed": False,
-    "footer_fixed": False,
     "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-primary",
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": True,
-    "sidebar_nav_compact_style": False,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": False,
 }
 
-AUTH_USER_MODEL = 'contas.Usuario'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

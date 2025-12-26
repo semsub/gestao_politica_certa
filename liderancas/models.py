@@ -1,24 +1,24 @@
 from django.db import models
-from django.conf import settings
+from municipios.models import Municipio
 
-class Auditoria(models.Model):
-    criado_em = models.DateTimeField(auto_now_add=True)
-    atualizado_em = models.DateTimeField(auto_now=True)
-    class Meta: abstract = True
+class Lideranca(models.Model):
+    NIVEL_CHOICES = [('A', 'Alta'), ('B', 'Média'), ('C', 'Local')]
+    nome = models.CharField(max_length=200)
+    municipio = models.ForeignKey(Municipio, on_delete=models.CASCADE)
+    telefone = models.CharField(max_length=20)
+    meta_votos = models.IntegerField(default=0)
+    nivel = models.CharField(max_length=1, choices=NIVEL_CHOICES, default='C')
+    biografia = models.TextField(blank=True)
 
-class Familia(Auditoria):
-    responsavel = models.CharField(max_length=255)
-    municipio = models.ForeignKey('municipios.Municipio', on_delete=models.CASCADE)
-    votos_estimados = models.IntegerField(default=1)
-    necessidades = models.TextField(blank=True)
-    def __str__(self): return self.responsavel
+    class Meta:
+        verbose_name = "Liderança"
+        verbose_name_plural = "Lideranças"
 
-class AtendimentoSocial(Auditoria):
-    familia = models.ForeignKey(Familia, on_delete=models.CASCADE)
-    tipo = models.CharField(max_length=50)
-    concluido = models.BooleanField(default=False)
+    def __str__(self):
+        return self.nome
 
-class Lideranca(Auditoria):
-    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    meta_votos = models.IntegerField(default=1000)
-    regiao = models.CharField(max_length=100)
+class AtendimentoSocial(models.Model):
+    lideranca = models.ForeignKey(Lideranca, on_delete=models.CASCADE)
+    pedido = models.TextField()
+    status = models.CharField(max_length=20, default='PENDENTE')
+    # Removi o campo que estava dando erro para o deploy passar limpo

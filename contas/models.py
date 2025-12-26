@@ -2,20 +2,20 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 class Usuario(AbstractUser):
-    telefone = models.CharField(max_length=20, blank=True, verbose_name="Telefone de Contato")
-    cargo = models.CharField(max_length=100, blank=True, verbose_name="Cargo Político")
+    telefone = models.CharField(max_length=20, blank=True, verbose_name="WhatsApp")
+    cargo = models.CharField(max_length=100, blank=True, verbose_name="Cargo/Função")
 
     groups = models.ManyToManyField(
         'auth.Group',
-        related_name='usuario_set',
+        related_name='usuario_custom_set',
         blank=True,
-        verbose_name="Grupos de Acesso"
+        verbose_name="Grupos"
     )
     user_permissions = models.ManyToManyField(
         'auth.Permission',
-        related_name='usuario_permissions_set',
+        related_name='usuario_custom_permissions_set',
         blank=True,
-        verbose_name="Permissões Específicas"
+        verbose_name="Permissões"
     )
 
     class Meta:
