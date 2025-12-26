@@ -3,5 +3,7 @@ from .models import Candidato
 
 @admin.register(Candidato)
 class CandidatoAdmin(admin.ModelAdmin):
-    list_display = ('nome_urna', 'numero', 'partido', 'ativo')
-    list_filter = ('ativo',)
+    # Removido 'ativo' para evitar erros de sistema
+    list_display = ('nome_urna', 'numero', 'partido', 'cargo', 'meta_votos_total')
+    search_fields = ('nome_urna', 'numero')
+    list_filter = ('partido', 'cargo')

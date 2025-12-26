@@ -3,12 +3,12 @@ from pathlib import Path
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-sua-chave-real-de-producao-2025'
-DEBUG = False # Produção
+SECRET_KEY = 'django-insecure-sua-chave-real-2025'
+DEBUG = True 
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    'jazzmin',
+    'jazzmin', # Deve vir antes do admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -29,10 +29,27 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
 AUTH_USER_MODEL = 'contas.Usuario'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
 
 DATABASES = {
     'default': dj_database_url.config(default=f"sqlite:///{BASE_DIR}/db.sqlite3")
@@ -47,28 +64,26 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# INTERFACE DE LUXO JAZZMIN
+# INTERFACE EXTRAORDINÁRIA JAZZMIN
 JAZZMIN_SETTINGS = {
-    "site_title": "SISTEMA POLÍTICO PRO",
-    "site_header": "Gestão Estratégica",
-    "site_brand": "INTELIGÊNCIA ELEITORAL",
-    "welcome_sign": "Painel de Controle de Campanha",
-    "copyright": "Gestão Política 2025",
+    "site_title": "GESTÃO POLÍTICA PRO",
+    "site_header": "Comando Estratégico",
+    "site_brand": "POLÍTICA PRO",
+    "welcome_sign": "Painel de Inteligência Eleitoral",
+    "copyright": "Gestão Política PA",
     "search_model": ["liderancas.Lideranca"],
     "show_sidebar": True,
     "navigation_expanded": True,
-    "order_with_respect_to": ["campanhas", "liderancas", "municipios"],
     "icons": {
         "campanhas.Candidato": "fas fa-crown",
-        "liderancas.Lideranca": "fas fa-user-tie",
-        "municipios.Municipio": "fas fa-city",
+        "liderancas.Lideranca": "fas fa-star",
+        "municipios.Municipio": "fas fa-map-marker-alt",
         "liderancas.AtendimentoSocial": "fas fa-hand-holding-heart",
     },
-    "changeform_format": "horizontal_tabs",
 }
 
 JAZZMIN_UI_TWEAKS = {
-    "theme": "flatly",
+    "theme": "flatly", # Minimalista e profissional
     "navbar": "navbar-dark navbar-primary",
     "sidebar": "sidebar-dark-primary",
 }
