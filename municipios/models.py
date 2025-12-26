@@ -1,4 +1,3 @@
-cat <<EOF > municipios/models.py
 from django.db import models
 
 class Municipio(models.Model):
@@ -7,4 +6,3 @@ class Municipio(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.estado}"
-EOF
