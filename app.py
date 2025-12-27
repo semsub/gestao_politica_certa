@@ -1,31 +1,34 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import json
 import os
+import json
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = "junior_araujo_2026_mestre_pa"
+app.secret_key = "junior_araujo_2026_pa_mestre"
 
-# Configuração de Caminhos
+# Configuração de Caminhos e Pastas
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 DB_FILE = os.path.join(BASE_DIR, "banco_dados.json")
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Garante que a pasta de fotos existe para não dar erro 500
+# CRIA A PASTA DE UPLOAD SE ELA NÃO EXISTIR (Evita o Erro 500)
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# --- DADOS DO ESTADO DO PARÁ ---
+# DADOS ESTÁTICOS
 MUNICIPIOS_PA = ["Abaetetuba", "Abel Figueiredo", "Acará", "Afuá", "Água Azul do Norte", "Alenquer", "Almeirim", "Altamira", "Ananindeua", "Anapu", "Augusto Corrêa", "Aurora do Pará", "Aveiro", "Bagre", "Baião", "Bannach", "Barcarena", "Belém", "Belterra", "Benevides", "Bom Jesus do Tocantins", "Bonito", "Bragança", "Brasil Novo", "Brejo Grande do Araguaia", "Breu Branco", "Breves", "Bujaru", "Cachoeira do Arari", "Cachoeira do Piriá", "Caeté", "Canaã dos Carajás", "Capanema", "Capitão Poço", "Castanhal", "Chaves", "Colares", "Conceição do Araguaia", "Concórdia do Pará", "Cumaru do Norte", "Curionópolis", "Curuá", "Curuçá", "Dom Eliseu", "Eldorado dos Carajás", "Faro", "Floresta do Araguaia", "Garrafão do Norte", "Goianésia do Pará", "Itaituba", "Itupiranga", "Jacareacanga", "Jacundá", "Juruti", "Marabá", "Marituba", "Medicilândia", "Melgaço", "Mocajuba", "Moju", "Monte Alegre", "Muaná", "Nova Ipixuna", "Nova Timboteua", "Novo Progresso", "Óbidos", "Oeiras do Pará", "Oriximiná", "Ourém", "Ourilândia do Norte", "Pacajá", "Paragominas", "Parauapebas", "Pau D'Arco", "Peixe-Boi", "Piçarra", "Placas", "Ponta de Pedras", "Portel", "Porto de Moz", "Prainha", "Primavera", "Quatipuru", "Redenção", "Rio Maria", "Rondon do Pará", "Rurópolis", "Salinópolis", "Salvaterra", "Santa Bárbara do Pará", "Santa Cruz do Arari", "Santa Izabel do Pará", "Santa Luzia do Pará", "Santa Maria das Barreiras", "Santa Maria do Pará", "Santana do Araguaia", "Santarém", "Santarém Novo", "Santo Antônio do Tauá", "São Caetano de Odivelas", "São Domingos do Araguaia", "São Domingos do Capim", "São Félix do Xingu", "São Francisco do Pará", "São Geraldo do Araguaia", "São João da Ponta", "São João de Pirabas", "São João do Araguaia", "São Miguel do Guamá", "São Sebastião da Boa Vista", "Sapucaia", "Senador José Porfírio", "Soure", "Tailândia", "Terra Alta", "Terra Santa", "Tomé-Açu", "Tracuateua", "Trairão", "Tucumã", "Tucuruí", "Ulianópolis", "Uruará", "Vigia", "Viseu", "Vitória do Xingu", "Xinguara"]
 
 CARGOS_POLITICOS = ["CANDIDATO À VEREADOR", "CANDIDATO À PREFEITO", "CANDIDATO À DEPUTADO FEDERAL", "CANDIDATO À DEPUTADO ESTADUAL", "CANDIDATO À SENADOR", "CANDIDATO À GOVERNADOR", "CANDIDATO À PRESIDENTE"]
 
 def carregar_dados():
-    if os.path.exists(DB_FILE):
-        with open(DB_FILE, 'r', encoding='utf-8') as f:
-            return json.load(f)
+    try:
+        if os.path.exists(DB_FILE):
+            with open(DB_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except:
+        pass
     return {
         "usuarios": {"junior.araujo21": {"senha": "230808Deus#", "cargo_sistema": "CRIADOR", "nome": "Júnior Araújo"}},
         "eleitores": [], "financas": [], "config": {"logo": ""}
@@ -47,11 +50,11 @@ def index():
     u = session['user_data']
     l_u = session['user']
     
-    # Lógica de Visualização por Hierarquia
+    # Filtros de Acesso
     if u['cargo_sistema'] == 'CRIADOR':
         eleitores = dados['eleitores']
     elif u['cargo_sistema'] == 'CANDIDATO':
-        eleitores = [e for e in dados['eleitores'] if e.get('candidato_pai') == l_u]
+        eleitores = [e for e in dados['eleitores'] if e.get('cand_pai') == l_u]
     elif u['cargo_sistema'] == 'COORDENADOR':
         eleitores = [e for e in dados['eleitores'] if e.get('coord_pai') == l_u]
     else:
@@ -59,11 +62,10 @@ def index():
 
     stats_mun = {}
     for e in eleitores:
-        m = e.get('municipio', 'Não Informado')
+        m = e.get('municipio', 'N/I')
         stats_mun[m] = stats_mun.get(m, 0) + 1
 
-    return render_template('dashboard.html', user=u, eleitores=eleitores, stats_mun=stats_mun, 
-                           financas=[f for f in dados.get('financas', []) if f.get('cand') == (l_u if u['cargo_sistema'] == 'CANDIDATO' else u.get('candidato_pai'))])
+    return render_template('dashboard.html', user=u, eleitores=eleitores, stats_mun=stats_mun)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
@@ -74,7 +76,7 @@ def login_page():
             session['user'] = login
             session['user_data'] = dados['usuarios'][login]
             return redirect(url_for('index'))
-        flash("Login ou senha inválidos!")
+        flash("Erro: Login ou Senha incorretos.")
     return render_template('login.html')
 
 @app.route('/upload_logo', methods=['POST'])
@@ -99,24 +101,12 @@ def cadastrar_usuario():
     novo = {
         "nome": request.form.get('nome'), "senha": request.form.get('senha'),
         "cargo_sistema": cargo, "municipio": request.form.get('municipio'),
-        "candidato_pai": session['user'] if u_atual['cargo_sistema'] == 'CANDIDATO' else u_atual.get('candidato_pai')
+        "cand_pai": session['user'] if u_atual['cargo_sistema'] == 'CANDIDATO' else u_atual.get('cand_pai')
     }
     if cargo == "CANDIDATO": novo["cargo_politico"] = request.form.get('cargo_politico')
     if u_atual['cargo_sistema'] == "COORDENADOR": novo["coord_pai"] = session['user']
 
     dados['usuarios'][login] = novo
-    salvar_dados(dados)
-    return redirect(url_for('index'))
-
-@app.route('/cadastrar_eleitor', methods=['POST'])
-def cadastrar_eleitor():
-    dados = carregar_dados()
-    u = session['user_data']
-    dados['eleitores'].append({
-        "nome": request.form.get('nome'), "contato": request.form.get('contato'),
-        "municipio": u.get('municipio'), "lider_pai": session['user'],
-        "candidato_pai": u.get('candidato_pai')
-    })
     salvar_dados(dados)
     return redirect(url_for('index'))
 
