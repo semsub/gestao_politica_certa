@@ -91,4 +91,83 @@ function toggleCargo() {
 }
 window.onload = toggleCargo;
 </script>
+
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card p-3 shadow-sm border-primary">
+            <h5>{{ user.nome }}</h5>
+            <p class="badge bg-primary">{{ user.cargo_sistema }} - {{ user.municipio }}</p>
+            {% if user.cargo_sistema == 'CRIADOR' %}
+            <form action="/upload_logo" method="post" enctype="multipart/form-data" class="mt-2">
+                <label class="small">Trocar Logomarca:</label>
+                <input type="file" name="logo" class="form-control form-control-sm mb-2">
+                <button class="btn btn-sm btn-dark w-100">Upload</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        {% if user.cargo_sistema in ['CRIADOR', 'CANDIDATO'] %}
+        <div class="card p-3 shadow-sm mb-4">
+            <h6>Cadastrar Liderança ou Coordenador</h6>
+            <form action="/cadastrar_usuario" method="post" class="row g-2">
+                <div class="col-6"><input type="text" name="nome" placeholder="Nome" class="form-control"></div>
+                <div class="col-3"><input type="text" name="login" placeholder="Login" class="form-control"></div>
+                <div class="col-3"><input type="password" name="senha" placeholder="Senha" class="form-control"></div>
+                <div class="col-6">
+                    <select name="cargo_sistema" class="form-select">
+                        <option value="COORDENADOR">COORDENADOR</option>
+                        <option value="LIDERANCA">LIDERANÇA</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <select name="municipio" class="form-select">
+                        {% for m in municipios %}<option value="{{m}}">{{m}}</option>{% endfor %}
+                    </select>
+                </div>
+                <button class="btn btn-primary">Salvar na Equipe</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="card p-3 shadow-sm">
+            <h5>Eleitores / Famílias Cadastradas</h5>
+            <div class="table-responsive">
+                <table class="table table-hover small">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Ações Realizadas</th>
+                            <th>Registrar Ajuda</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in eleitores %}
+                        <tr>
+                            <td><b>{{ e.nome }}</b><br><small>{{ e.contato }}</small></td>
+                            <td>
+                                {% for ajuda in e.historico_ajudas %}
+                                <span class="badge bg-success" style="font-size: 0.7rem;">{{ ajuda.tipo }} ({{ ajuda.data }})</span><br>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <form action="/registrar_ajuda" method="post" class="d-flex">
+                                    <input type="hidden" name="eleitor_index" value="{{ loop.index0 }}">
+                                    <select name="tipo_ajuda" class="form-select form-select-sm me-1">
+                                        {% for acao in acoes_disponiveis %}<option value="{{acao}}">{{acao}}</option>{% endfor %}
+                                    </select>
+                                    <button class="btn btn-sm btn-outline-primary">+</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
