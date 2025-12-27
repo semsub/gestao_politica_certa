@@ -1,15 +1,15 @@
 {
+  "short_name": "CampanhaCerta",
   "name": "Júnior Araújo - Sistema de Campanha Política",
-  "short_name": "Campanha 2026",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0d6efd",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2942/2942503.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "https://cdn-icons-png.flaticon.com/512/2942/2942813.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
-  ]
+  ],
+  "start_url": "/",
+  "background_color": "#0d6efd",
+  "display": "standalone",
+  "theme_color": "#0d6efd"
 }

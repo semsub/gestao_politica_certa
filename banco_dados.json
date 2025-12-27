@@ -2,36 +2,41 @@
     "usuarios": {
         "junior.araujo21": {
             "senha": "230808Deus#",
-            "cargo_sistema": "CRIADOR",
+            "cargo": "ADM",
             "nome": "Júnior Araújo",
-            "foto": "img_junior.araujo21_WhatsApp_Image_2025-12-27_at_01.13.31.jpeg",
-            "municipio": null,
-            "numero": null,
-            "legenda": null,
-            "partido": null
+            "municipio": "Salinópolis"
         },
-        "DR MARINHO": {
+        "dr marinho": {
             "nome": "DR MARINHO",
             "senha": "Marinho2026#",
-            "cargo_sistema": "CANDIDATO",
-            "foto": "img_DR MARINHO_WhatsApp_Image_2025-12-23_at_08.12.41.jpeg",
-            "municipio": "Abel Figueiredo",
-            "cand_pai": "",
-            "numero": "22.222",
-            "legenda": null,
-            "partido": "PL"
+            "cargo": "CANDIDATO",
+            "pai": null,
+            "cad_por": "Júnior Araújo"
         },
-        "MARCIO": {
+        "marcio": {
             "nome": "MARCIO SARMENTO DE ARAÚJO",
             "senha": "Marcio60#",
-            "cargo_sistema": "LIDERANÇA",
-            "foto": "img_MARCIO_logo_acpamsal.png_2.jpeg",
-            "municipio": "Salinópolis",
-            "cand_pai": "DR MARINHO",
-            "numero": "",
-            "legenda": null,
-            "partido": ""
+            "cargo": "LIDERANÇA",
+            "pai": "dr marinho",
+            "cad_por": "DR MARINHO"
         }
     },
-    "familias": []
+    "cadastros": [
+        {
+            "id": "5c751c75-38f5-40cb-83f3-fd2eafb28eb0",
+            "tipo": "PESSOA",
+            "nome": "HIANNA CRISTINA",
+            "titulo": "00000000000",
+            "zona": "0000",
+            "secao": "000",
+            "rua": "RUA PEDRO DE ALCÂNTARA BARROS",
+            "numero": "20",
+            "bairro": "SÃO TOMÉ",
+            "municipio": null,
+            "r_por": "marcio",
+            "nome_quem_cadastrou": "MARCIO SARMENTO DE ARAÚJO",
+            "pai": "dr marinho",
+            "acoes": []
+        }
+    ]
 }
