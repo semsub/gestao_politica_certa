@@ -1,9 +1,16 @@
 from django.contrib import admin
-from .models import Candidato
+from .models import Candidato, Lideranca, Eleitor
 
 @admin.register(Candidato)
 class CandidatoAdmin(admin.ModelAdmin):
-    # Removido 'ativo' para evitar erros de sistema
-    list_display = ('nome_urna', 'numero', 'partido', 'cargo', 'meta_votos_total')
-    search_fields = ('nome_urna', 'numero')
-    list_filter = ('partido', 'cargo')
+    list_display = ('nome_urna', 'numero', 'partido')
+
+@admin.register(Lideranca)
+class LiderancaAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'nivel', 'municipio_base')
+    list_filter = ('nivel', 'municipio_base')
+
+@admin.register(Eleitor)
+class EleitorAdmin(admin.ModelAdmin):
+    list_display = ('nome', 'municipio', 'zona', 'secao', 'cadastrado_por')
+    search_fields = ('nome', 'titulo_eleitor', 'municipio')

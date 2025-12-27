@@ -1,0 +1,58 @@
+{
+    "usuarios": {
+        "junior.araujo21": {
+            "senha": "230808Deus#",
+            "cargo_sistema": "CRIADOR",
+            "nome": "J\u00fanior Ara\u00fajo",
+            "id_login": "junior.araujo21"
+        },
+        "DR MARINHO": {
+            "senha": "Marinho2026#",
+            "cargo_sistema": "CANDIDATO",
+            "nome": "DR MARINHO",
+            "cargo_politico": "DEPUTADO FEDERAL",
+            "id_login": "DR MARINHO"
+        },
+        "MARCIO": {
+            "senha": "Marcio123",
+            "cargo_sistema": "LIDERANCA",
+            "nome": "MARCIO - ASSOCIA\u00c7\u00c3O COMUNIDADE LEIDE",
+            "id_login": "MARCIO"
+        },
+        "HANA": {
+            "senha": "Hana123",
+            "cargo_sistema": "COORDENADOR",
+            "nome": "HANA LAURA BARROS PINHEIRO",
+            "setor": "COORDENA\u00c7\u00c3O GERAL"
+        }
+    },
+    "liderancas": {
+        "MARCIO": {
+            "nome": "MARCIO - ASSOCIA\u00c7\u00c3O COMUNIDADE LEIDE",
+            "municipio": "SALIN\u00d3POLIS",
+            "contato": "(91) 98020-5693",
+            "base": [
+                {
+                    "nome": "PEDROPAULO DIAS PINHEIRO J\u00daNIOR",
+                    "titulo": "130956136458",
+                    "zona": "0065",
+                    "secao": "031",
+                    "contato": "(91) 98144-9920",
+                    "lideranca": "MARCIO - ASSOCIA\u00c7\u00c3O COMUNIDADE LEIDE",
+                    "municipio": "SALIN\u00d3POLIS"
+                }
+            ]
+        }
+    },
+    "eleitores": [
+        {
+            "nome": "PEDROPAULO DIAS PINHEIRO J\u00daNIOR",
+            "titulo": "130956136458",
+            "zona": "0065",
+            "secao": "031",
+            "contato": "(91) 98144-9920",
+            "lideranca": "MARCIO - ASSOCIA\u00c7\u00c3O COMUNIDADE LEIDE",
+            "municipio": "SALIN\u00d3POLIS"
+        }
+    ]
+}

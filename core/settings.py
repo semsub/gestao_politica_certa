@@ -3,38 +3,40 @@ from pathlib import Path
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'django-insecure-sua-chave-real-2025'
-DEBUG = True 
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-chave-junior-salinas-2025')
+
+DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
+
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    'jazzmin', # Deve vir antes do admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
+    'django.contrib.messages', # Necessário para o erro E409
     'django.contrib.staticfiles',
-    'contas',
-    'liderancas',
-    'municipios',
-    'campanhas',
+    'rest_framework',
+    'corsheaders',
+    'campanhas', 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware', # Necessário para o erro E408
+    'django.contrib.messages.middleware.MessageMiddleware',       # Necessário para o erro E409
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
-AUTH_USER_MODEL = 'contas.Usuario'
 
+# Configuração de Templates - Resolve o erro E403
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -51,39 +53,32 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = 'core.wsgi.application'
+
+# Banco de Dados Dinâmico para Render e Local
 DATABASES = {
-    'default': dj_database_url.config(default=f"sqlite:///{BASE_DIR}/db.sqlite3")
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
+
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+]
 
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Belem'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# INTERFACE EXTRAORDINÁRIA JAZZMIN
-JAZZMIN_SETTINGS = {
-    "site_title": "GESTÃO POLÍTICA PRO",
-    "site_header": "Comando Estratégico",
-    "site_brand": "POLÍTICA PRO",
-    "welcome_sign": "Painel de Inteligência Eleitoral",
-    "copyright": "Gestão Política PA",
-    "search_model": ["liderancas.Lideranca"],
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "icons": {
-        "campanhas.Candidato": "fas fa-crown",
-        "liderancas.Lideranca": "fas fa-star",
-        "municipios.Municipio": "fas fa-map-marker-alt",
-        "liderancas.AtendimentoSocial": "fas fa-hand-holding-heart",
-    },
-}
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-JAZZMIN_UI_TWEAKS = {
-    "theme": "flatly", # Minimalista e profissional
-    "navbar": "navbar-dark navbar-primary",
-    "sidebar": "sidebar-dark-primary",
-}
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CORS_ALLOW_ALL_ORIGINS = True

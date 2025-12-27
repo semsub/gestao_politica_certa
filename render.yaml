@@ -1,0 +1,24 @@
+services:
+  # Configuração do Banco de Dados PostgreSQL
+  - type: database
+    name: db_politico_pa
+    region: ohio
+    plan: free
+
+  # Configuração do Servidor Web (Django)
+  - type: web
+    name: qg_central_pa
+    env: python
+    region: ohio
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn projeto.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: db_politico_pa
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: SECRET_KEY
+        generateValue: true

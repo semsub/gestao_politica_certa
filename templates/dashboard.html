@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mb-4">
+    <h4>Olá, {{ user.nome }}</h4>
+    <span class="badge bg-info text-dark">{{ user.cargo_sistema }}</span>
+</div>
+
+{% if user.cargo_sistema == 'CRIADOR' %}
+<div class="card p-3 mb-3 border-success">
+    <h5>Cadastrar Novo Candidato</h5>
+    <form action="/cadastrar_candidato" method="post" class="row g-2">
+        <input type="text" name="nome" placeholder="Nome do Candidato" class="form-control" required>
+        <input type="text" name="login" placeholder="Login" class="form-control" required>
+        <input type="password" name="senha" placeholder="Senha" class="form-control" required>
+        <button type="submit" class="btn btn-success">Salvar Candidato</button>
+    </form>
+</div>
+{% endif %}
+
+{% if user.cargo_sistema in ['CANDIDATO', 'COORDENADOR'] %}
+<div class="row mb-4">
+    <div class="col-6">
+        <div class="card bg-primary text-white p-3 text-center">
+            <h1>{{ total_eleitores }}</h1>
+            <p>Total Geral</p>
+        </div>
+    </div>
+</div>
+
+<div class="card p-3 mb-4">
+    <h5>Cadastrar Liderança ou Coordenador</h5>
+    <form action="/cadastrar_hierarquia" method="post">
+        <select name="tipo" class="form-select mb-2">
+            <option value="COORDENADOR">Coordenador</option>
+            <option value="LIDERANCA">Liderança</option>
+        </select>
+        <input type="text" name="nome" placeholder="Nome Completo" class="form-control mb-2" required>
+        <input type="text" name="login" placeholder="Login de Acesso" class="form-control mb-2" required>
+        <input type="password" name="senha" placeholder="Senha" class="form-control mb-2" required>
+        <input type="text" name="municipio" placeholder="Município (Ex: Salinópolis)" class="form-control mb-2">
+        <button type="submit" class="btn btn-primary w-100">Cadastrar na Equipe</button>
+    </form>
+</div>
+{% endif %}
+
+{% if user.cargo_sistema == 'LIDERANCA' %}
+<div class="card p-3 mb-4 border-primary">
+    <h5>Cadastrar Eleitor na Base</h5>
+    <form action="/cadastrar_eleitor" method="post">
+        <input type="text" name="nome" placeholder="Nome Completo" class="form-control mb-2" required>
+        <div class="row g-2 mb-2">
+            <div class="col-6"><input type="text" name="titulo" placeholder="Título" class="form-control"></div>
+            <div class="col-3"><input type="text" name="zona" placeholder="Zona" class="form-control"></div>
+            <div class="col-3"><input type="text" name="secao" placeholder="Seção" class="form-control"></div>
+        </div>
+        <input type="text" name="contato" placeholder="WhatsApp (91) 9..." class="form-control mb-2">
+        <button type="submit" class="btn btn-primary w-100">Confirmar Cadastro</button>
+    </form>
+</div>
+{% endif %}
+
+{% endblock %}

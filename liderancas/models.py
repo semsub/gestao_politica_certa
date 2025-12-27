@@ -1,28 +1,22 @@
 from django.db import models
-from municipios.models import Municipio
 
 class Lideranca(models.Model):
-    NIVEIS = [('A', 'Influência Alta'), ('B', 'Média'), ('C', 'Local')]
+    # Quem cadastrou este líder? (Rastreabilidade total)
+    cadastrado_por = models.ForeignKey('campanhas.Coordenador', on_delete=models.SET_NULL, null=True)
     
-    nome = models.CharField(max_length=200, verbose_name="Nome da Liderança")
-    municipio = models.ForeignKey(Municipio, on_delete=models.CASCADE, verbose_name="Cidade Base")
-    telefone = models.CharField(max_length=20, verbose_name="WhatsApp")
-    meta_votos = models.PositiveIntegerField(default=0, verbose_name="Meta de Votos")
-    nivel = models.CharField(max_length=1, choices=NIVEIS, default='C', verbose_name="Nível")
-
-    class Meta:
-        verbose_name = "Liderança"
-        verbose_name_plural = "Lideranças"
+    nome = models.CharField(max_length=150)
+    cpf = models.CharField(max_length=14, unique=True)
+    whatsapp = models.CharField(max_length=20)
+    municipio = models.CharField(max_length=100) # Ex: 144 cidades do Pará
+    
+    # Lógica de exclusividade solicitada:
+    apoiando_outros = models.BooleanField(
+        default=False, 
+        help_text="Se Falso, trabalha apenas para este Candidato Majoritário"
+    )
+    
+    # Status de acesso (Só entra no app após o Coordenador ativar)
+    acesso_liberado = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.nome
-
-class AtendimentoSocial(models.Model):
-    lideranca = models.ForeignKey(Lideranca, on_delete=models.CASCADE)
-    demanda = models.TextField(verbose_name="Descrição do Pedido")
-    data_solicitacao = models.DateField(auto_now_add=True)
-    concluido = models.BooleanField(default=False, verbose_name="Resolvido?")
-
-    class Meta:
-        verbose_name = "Atendimento"
-        verbose_name_plural = "Atendimentos"
+        return f"{self.nome} - {self.municipio}"
