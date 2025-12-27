@@ -1,173 +1,83 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row">
-    <div class="col-md-3">
-        <div class="card p-3 shadow-sm mb-3">
-            <h5>{{ user.nome }}</h5>
-            <span class="badge bg-primary">{{ user.cargo_sistema }}</span>
-            {% if user.cargo_politico %}<br><small>{{ user.cargo_politico }}</small>{% endif %}
-            <hr>
-            <h6>Municípios:</h6>
-            {% for m, total in stats_mun.items() %}
-                <div class="d-flex justify-content-between small"><span>{{m}}</span> <b>{{total}}</b></div>
-            {% endfor %}
-        </div>
-
-        {% if user.cargo_sistema == 'CRIADOR' %}
-        <div class="card p-3 shadow-sm">
-            <h6>Upload de Logo</h6>
-            <form action="/upload_logo" method="post" enctype="multipart/form-data">
-                <input type="file" name="logo" class="form-control form-control-sm mb-2" required>
-                <button type="submit" class="btn btn-dark btn-sm w-100">Atualizar Logomarca</button>
-            </form>
-        </div>
-        {% endif %}
-    </div>
-
-    <div class="col-md-9">
-        {% if user.cargo_sistema in ['CRIADOR', 'CANDIDATO', 'COORDENADOR'] %}
-        <div class="card p-3 shadow-sm mb-4">
-            <h5>Cadastrar Membro na Equipe</h5>
-            <form action="/cadastrar_usuario" method="post" class="row g-2">
-                <div class="col-md-4"><input type="text" name="nome" placeholder="Nome" class="form-control" required></div>
-                <div class="col-md-4"><input type="text" name="login" placeholder="Login" class="form-control" required></div>
-                <div class="col-md-4"><input type="password" name="senha" placeholder="Senha" class="form-control" required></div>
-                
-                <div class="col-md-4">
-                    <select name="cargo_sistema" class="form-select" id="sel_cargo" onchange="toggleCargo()">
-                        {% if user.cargo_sistema == 'CRIADOR' %}<option value="CANDIDATO">CANDIDATO</option>{% endif %}
-                        <option value="COORDENADOR">COORDENADOR</option>
-                        <option value="LIDERANCA">LIDERANÇA</option>
-                    </select>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card bg-primary text-white shadow-sm border-0">
+            <div class="card-body p-3">
+                <h6 class="fw-bold mb-2"><i class="bi bi-graph-up-arrow"></i> Rendimento de Campanha</h6>
+                <div class="row text-center">
+                    <div class="col-4 border-end">
+                        <small class="d-block">Líderes</small>
+                        <span class="h5 fw-bold">{{ total_l }}</span>
+                    </div>
+                    <div class="col-4 border-end">
+                        <small class="d-block">Famílias</small>
+                        <span class="h5 fw-bold">{{ eleitores|length }}</span>
+                    </div>
+                    <div class="col-4">
+                        <small class="d-block">Cidades</small>
+                        <span class="h5 fw-bold">{{ stats|length }}</span>
+                    </div>
                 </div>
-
-                <div class="col-md-4">
-                    <select name="municipio" class="form-select">
-                        {% for m in municipios %}<option value="{{m}}">{{m}}</option>{% endfor %}
-                    </select>
-                </div>
-
-                <div class="col-md-4" id="div_pol" style="display:none;">
-                    <select name="cargo_politico" class="form-select">
-                        {% for c in cargos %}<option value="{{c}}">{{c}}</option>{% endfor %}
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 mt-2">Salvar Cadastro</button>
-            </form>
-        </div>
-        {% endif %}
-
-        {% if user.cargo_sistema == 'LIDERANCA' %}
-        <div class="card p-3 shadow-sm mb-4 border-info">
-            <h5>Cadastrar Família / Pessoa em {{ user.municipio }}</h5>
-            <form action="/cadastrar_eleitor" method="post" class="row g-2">
-                <div class="col-md-8"><input type="text" name="nome" placeholder="Nome do Eleitor" class="form-control" required></div>
-                <div class="col-md-4"><input type="text" name="contato" placeholder="WhatsApp" class="form-control"></div>
-                <button type="submit" class="btn btn-info text-white">Salvar Pessoa</button>
-            </form>
-        </div>
-        {% endif %}
-
-        <div class="card p-3 shadow-sm">
-            <h6>Listagem Geral (Total: {{ eleitores|length }})</h6>
-            <div class="table-responsive">
-                <table class="table table-sm small">
-                    <thead><tr><th>Nome</th><th>Município</th><th>Responsável</th></tr></thead>
-                    <tbody>
-                        {% for e in eleitores %}
-                        <tr><td>{{e.nome}}</td><td>{{e.municipio}}</td><td>{{e.lider_pai}}</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-function toggleCargo() {
-    var c = document.getElementById("sel_cargo").value;
-    document.getElementById("div_pol").style.display = (c === "CANDIDATO") ? "block" : "none";
-}
-window.onload = toggleCargo;
-</script>
+<div class="card mb-3 shadow-sm">
+    <div class="card-header bg-white fw-bold small">Cidades com mais Cadastros</div>
+    <div class="card-body p-2" style="max-height: 120px; overflow-y: auto;">
+        {% for m, v in stats|dictsort(false, 'value', reverse=true) %}
+        <div class="d-flex justify-content-between border-bottom py-1 small">
+            <span>{{m}}</span><span class="badge bg-info">{{v}}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
-{% extends "base.html" %}
-{% block content %}
-<div class="row">
-    <div class="col-md-4">
-        <div class="card p-3 shadow-sm border-primary">
-            <h5>{{ user.nome }}</h5>
-            <p class="badge bg-primary">{{ user.cargo_sistema }} - {{ user.municipio }}</p>
-            {% if user.cargo_sistema == 'CRIADOR' %}
-            <form action="/upload_logo" method="post" enctype="multipart/form-data" class="mt-2">
-                <label class="small">Trocar Logomarca:</label>
-                <input type="file" name="logo" class="form-control form-control-sm mb-2">
-                <button class="btn btn-sm btn-dark w-100">Upload</button>
-            </form>
+<div class="row g-2">
+    <div class="col-12 col-md-4">
+        <div class="card p-3 text-center mb-2 shadow-sm">
+            <img src="{{ url_for('static', filename='uploads/' + user.foto) if user.foto else 'https://via.placeholder.com/100' }}" class="rounded-circle mx-auto mb-2 border border-3 border-primary" width="80" height="80" style="object-fit:cover;">
+            <h6 class="mb-0">{{ user.nome }}</h6>
+            <span class="badge bg-light text-dark border mb-2">{{ user.cargo_sistema }}</span>
+            <button class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#modalPerfil">Configurações</button>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-8">
+        <div class="row g-2">
+            {% if user.cargo_sistema in ['CRIADOR', 'CANDIDATO'] %}
+            <div class="col-6"><button class="btn btn-dark btn-sm w-100 py-3" data-bs-toggle="modal" data-bs-target="#addMembro"> + Coordenador</button></div>
+            {% endif %}
+            
+            {% if 'COORDENADOR' in user.cargo_sistema or user.cargo_sistema == 'CRIADOR' %}
+            <div class="col-6"><button class="btn btn-primary btn-sm w-100 py-3" data-bs-toggle="modal" data-bs-target="#addLider"> + Liderança</button></div>
+            {% endif %}
+
+            {% if user.cargo_sistema == 'LIDERANÇA' or user.cargo_sistema == 'CRIADOR' %}
+            <div class="col-12"><button class="btn btn-success btn-sm w-100 py-3" data-bs-toggle="modal" data-bs-target="#addFamilia"> + Cadastrar Família / Pessoa</button></div>
             {% endif %}
         </div>
     </div>
+</div>
 
-    <div class="col-md-8">
-        {% if user.cargo_sistema in ['CRIADOR', 'CANDIDATO'] %}
-        <div class="card p-3 shadow-sm mb-4">
-            <h6>Cadastrar Liderança ou Coordenador</h6>
-            <form action="/cadastrar_usuario" method="post" class="row g-2">
-                <div class="col-6"><input type="text" name="nome" placeholder="Nome" class="form-control"></div>
-                <div class="col-3"><input type="text" name="login" placeholder="Login" class="form-control"></div>
-                <div class="col-3"><input type="password" name="senha" placeholder="Senha" class="form-control"></div>
-                <div class="col-6">
-                    <select name="cargo_sistema" class="form-select">
-                        <option value="COORDENADOR">COORDENADOR</option>
-                        <option value="LIDERANCA">LIDERANÇA</option>
-                    </select>
-                </div>
-                <div class="col-6">
-                    <select name="municipio" class="form-select">
-                        {% for m in municipios %}<option value="{{m}}">{{m}}</option>{% endfor %}
-                    </select>
-                </div>
-                <button class="btn btn-primary">Salvar na Equipe</button>
-            </form>
-        </div>
-        {% endif %}
-
-        <div class="card p-3 shadow-sm">
-            <h5>Eleitores / Famílias Cadastradas</h5>
-            <div class="table-responsive">
-                <table class="table table-hover small">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Ações Realizadas</th>
-                            <th>Registrar Ajuda</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for e in eleitores %}
-                        <tr>
-                            <td><b>{{ e.nome }}</b><br><small>{{ e.contato }}</small></td>
-                            <td>
-                                {% for ajuda in e.historico_ajudas %}
-                                <span class="badge bg-success" style="font-size: 0.7rem;">{{ ajuda.tipo }} ({{ ajuda.data }})</span><br>
-                                {% endfor %}
-                            </td>
-                            <td>
-                                <form action="/registrar_ajuda" method="post" class="d-flex">
-                                    <input type="hidden" name="eleitor_index" value="{{ loop.index0 }}">
-                                    <select name="tipo_ajuda" class="form-select form-select-sm me-1">
-                                        {% for acao in acoes_disponiveis %}<option value="{{acao}}">{{acao}}</option>{% endfor %}
-                                    </select>
-                                    <button class="btn btn-sm btn-outline-primary">+</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="card mt-3 shadow-sm border-0">
+    <div class="card-header bg-light fw-bold small">Gestão de Equipe e Acessos</div>
+    <div class="table-responsive">
+        <table class="table table-sm small align-middle mb-0">
+            <thead><tr class="table-secondary"><th>Nome</th><th>Login/Senha</th><th>Local</th></tr></thead>
+            <tbody>
+                {% for login, d in equipe.items() %}
+                <tr>
+                    <td>{{d.nome}}<br><small class="text-muted">{{d.cargo_sistema}}</small></td>
+                    <td>{{login}}<br><code class="text-danger">{{d.senha}}</code></td>
+                    <td>{{d.municipio}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
+
 {% endblock %}
