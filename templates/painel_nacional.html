@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block conteudo %}
+
+<h4>Painel Nacional - Multi-Estado</h4>
+<div class="card p-3">
+    <canvas id="nacionalChart"></canvas>
+</div>
+
+<script>
+const ctx = document.getElementById('nacionalChart').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ estados.keys()|list|safe }},
+        datasets: [{
+            label: 'Eleitores por Estado',
+            data: {{ estados.values()|list|safe }},
+            backgroundColor: 'rgba(255, 99, 132, 0.6)'
+        }]
+    },
+    options: { responsive: true }
+});
+</script>
+
+{% endblock %}

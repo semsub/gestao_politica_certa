@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Relatório PDF</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Tipo</th>
+            <th>Nome</th>
+            <th>Município</th>
+            <th>Status</th>
+            <th>Data</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in relatorio %}
+        <tr>
+            <td>{{ item.tipo }}</td>
+            <td>{{ item.nome }}</td>
+            <td>{{ item.municipio }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.data }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p style="margin-top:20px;">Gerado por JÚNIOR ARAÚJO SISTEMAS</p>
+{% endblock %}

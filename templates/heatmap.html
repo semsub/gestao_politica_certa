@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Heatmap de Votos</h2>
+
+<div id="heatmap" style="height:500px;width:100%;margin-bottom:20px;"></div>
+
+<script>
+    var map = L.map('heatmap').setView([-1.455, -48.503], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18
+    }).addTo(map);
+
+    var heatPoints = [
+        {% for ponto in pontos %}
+        [{{ ponto.lat }}, {{ ponto.lng }}, {{ ponto.votos }}],
+        {% endfor %}
+    ];
+
+    L.heatLayer(heatPoints, {radius: 25}).addTo(map);
+</script>
+{% endblock %}

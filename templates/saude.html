@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Módulo Saúde</h2>
+
+<form method="POST" action="{{ url_for('saude') }}">
+    <select name="acao" required>
+        <option value="">Selecione a Ação</option>
+        <option value="Agendamento de Exames">Agendamento de Exames</option>
+        <option value="Agendamento de Consultas">Agendamento de Consultas</option>
+        <option value="Agendamento de Cirurgias">Agendamento de Cirurgias</option>
+        <option value="Leito de UTI">Leito de UTI</option>
+        <option value="Medicação">Medicação</option>
+        <option value="Óculos">Óculos</option>
+        <option value="Viagem para Consulta">Viagem para Consulta</option>
+        <option value="Busca de Alta Médica">Busca de Alta Médica</option>
+    </select>
+
+    <input type="text" name="eleitor_nome" placeholder="Nome do Eleitor" required>
+    <input type="submit" value="Registrar">
+</form>
+
+<h3>Registros Saúde</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Ação</th>
+            <th>Eleitor</th>
+            <th>Responsável</th>
+            <th>Data</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for registro in saude %}
+        <tr>
+            <td>{{ registro.acao }}</td>
+            <td>{{ registro.eleitor }}</td>
+            <td>{{ registro.responsavel }}</td>
+            <td>{{ registro.data }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

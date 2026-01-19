@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card card-luxo p-4 shadow-sm animate__animated animate__fadeIn">
+        <h4 class="fw-bold gold-text text-uppercase mb-4">
+            <i class="bi bi-person-plus-fill me-2"></i>Cadastrar Membro da Equipe
+        </h4>
+
+        <form action="{{ url_for('cadastro_usuario') }}" method="POST">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nome do Membro</label>
+                    <input type="text" name="nome" class="form-control" placeholder="Nome Completo" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Contato (WhatsApp)</label>
+                    <input type="text" name="contato" class="form-control" placeholder="(91) 9....-....">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Nível de Acesso</label>
+                    <select name="nivel" id="nivel_select" class="form-select" required onchange="ajustarCampos()">
+                        <option value="" selected disabled>Selecione...</option>
+                        {% if user.nivel == 'ADM' %}
+                        <option value="CANDIDATO">CANDIDATO</option>
+                        <option value="COORDENADOR">COORDENADOR</option>
+                        <option value="LIDERANÇA">LIDERANÇA</option>
+                        {% elif user.nivel == 'CANDIDATO' %}
+                        <option value="COORDENADOR">COORDENADOR</option>
+                        <option value="LIDERANÇA">LIDERANÇA</option>
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="col-md-4" id="div_cargo" style="display: none;">
+                    <label class="form-label fw-bold">Cargo</label>
+                    <select name="cargo" id="cargo_select" class="form-select" onchange="ajustarCampos()">
+                        <option value="DEPUTADO ESTADUAL">DEPUTADO ESTADUAL</option>
+                        <option value="DEPUTADO FEDERAL">DEPUTADO FEDERAL</option>
+                        <option value="GOVERNADOR">GOVERNADOR</option>
+                        <option value="SENADOR">SENADOR</option>
+                        <option value="PRESIDENTE">PRESIDENTE</option>
+                        <option value="PREFEITO">PREFEITO</option>
+                        <option value="VEREADOR">VEREADOR</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4" id="div_municipio">
+                    <label class="form-label fw-bold">Município de Atuação</label>
+                    <select name="municipio" class="form-select">
+                        <option value="" selected disabled>Selecione a cidade</option>
+                        {% for m in municipios %}
+                        <option value="{{ m }}">{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Login</label>
+                    <input type="text" name="login" class="form-control" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Senha</label>
+                    <input type="password" name="senha" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-warning fw-bold w-100 py-3 text-uppercase">Finalizar Cadastro</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function ajustarCampos() {
+    const nivel = document.getElementById('nivel_select').value;
+    const cargo = document.getElementById('cargo_select').value;
+    const divCargo = document.getElementById('div_cargo');
+    const divMunicipio = document.getElementById('div_municipio');
+
+    // Lógica para mostrar/esconder Cargo
+    if (nivel === 'CANDIDATO') {
+        divCargo.style.display = 'block';
+    } else {
+        divCargo.style.display = 'none';
+        divCargo.value = "";
+    }
+
+    // Lógica do Município (Regra solicitada)
+    const cargosSemMunicipio = ['DEPUTADO ESTADUAL', 'DEPUTADO FEDERAL', 'GOVERNADOR', 'SENADOR', 'PRESIDENTE'];
+    
+    if (nivel === 'CANDIDATO' && cargosSemMunicipio.includes(cargo)) {
+        divMunicipio.style.display = 'none';
+    } else {
+        divMunicipio.style.display = 'block';
+    }
+}
+</script>
+
+<style>
+    .card-luxo { border-radius: 20px; border: none; background: white; }
+    .gold-text { color: #D4AF37; }
+</style>
+{% endblock %}

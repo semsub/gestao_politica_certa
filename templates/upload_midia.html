@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload de Mídia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h2>Upload de Mídia - {{ candidato.nome }}</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="arquivo" accept="image/*,video/*" required>
+        <button type="submit">Enviar</button>
+    </form>
+
+    <h3>Mídias Enviadas</h3>
+    <div class="midias-container">
+        {% for m in midias %}
+            {% if m.tipo == 'imagem' %}
+                <img src="{{ url_for('static', filename='uploads/' ~ m.nome_arquivo) }}" alt="Mídia" style="max-width:100px; margin:5px;">
+            {% else %}
+                <video controls style="max-width:150px; margin:5px;">
+                    <source src="{{ url_for('static', filename='uploads/' ~ m.nome_arquivo) }}" type="video/mp4">
+                </video>
+            {% endif %}
+        {% endfor %}
+    </div>
+</body>
+</html>

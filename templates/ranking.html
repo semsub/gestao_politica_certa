@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Ranking de Lideranças</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Posição</th>
+            <th>Liderança</th>
+            <th>Município</th>
+            <th>Total de Eleitores</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in ranking %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ r.nome }}</td>
+            <td>{{ r.municipio }}</td>
+            <td>{{ r.total_eleitores }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

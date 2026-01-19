@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Mapa de Eleitores</h2>
+
+<div id="mapa_view" style="height:500px;width:100%;"></div>
+
+<script>
+    var map = L.map('mapa_view').setView([-1.455, -48.503], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18
+    }).addTo(map);
+
+    {% for eleitor in eleitores %}
+    L.marker([{{ eleitor.lat }}, {{ eleitor.lng }}])
+        .addTo(map)
+        .bindPopup("{{ eleitor.nome }} - {{ eleitor.municipio }}");
+    {% endfor %}
+</script>
+{% endblock %}

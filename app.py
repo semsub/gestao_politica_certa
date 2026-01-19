@@ -1,259 +1,340 @@
-import os, json, uuid, base64, re
-from flask import Flask, render_template_string, request, redirect, url_for, session
+import os
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import aliased
+from werkzeug.utils import secure_filename
+from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "junior_araujo_master_2026_final"
+app.secret_key = "230808Deus#"
 
-DB_FILE = "banco_dados.json"
+# --- CONFIGURAÇÕES ---
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
 
-CARGOS_POLITICOS = ["PRESIDENTE", "GOVERNADOR", "SENADOR", "DEPUTADO FEDERAL", "DEPUTADO ESTADUAL", "PREFEITO", "VEREADOR"]
-MUNICIPIOS_PA = ["Abel Figueiredo", "Acará", "Afuá", "Água Azul do Norte", "Alenquer", "Almeirim", "Altamira", "Ananindeua", "Anapu", "Augusto Corrêa", "Aurora do Pará", "Aveiro", "Bagre", "Baião", "Bannach", "Barcarena", "Belém", "Belterra", "Benevides", "Bom Jesus do Tocantins", "Bonito", "Bragança", "Brasil Novo", "Brejo Grande do Araguaia", "Breu Branco", "Breves", "Bujaru", "Cachoeira do Arari", "Cachoeira do Piriá", "Caeté", "Canaã dos Carajás", "Capanema", "Capitão Poço", "Castanhal", "Chaves", "Colares", "Conceição do Araguaia", "Concórdia do Pará", "Cumaru do Norte", "Curionópolis", "Curuá", "Curuçá", "Dom Eliseu", "Eldorado dos Carajás", "Faro", "Floresta do Araguaia", "Garrafão do Norte", "Goianésia do Pará", "Itaituba", "Itupiranga", "Jacareacanga", "Jacundá", "Juruti", "Marabá", "Marituba", "Medicilândia", "Melgaço", "Mocajuba", "Moju", "Monte Alegre", "Muaná", "Nova Ipixuna", "Nova Timboteua", "Novo Progresso", "Óbidos", "Oeiras do Pará", "Oriximiná", "Ourém", "Ourilândia do Norte", "Pacajá", "Paragominas", "Parauapebas", "Pau D'Arco", "Peixe-Boi", "Piçarra", "Placas", "Ponta de Pedras", "Portel", "Porto de Moz", "Prainha", "Primavera", "Quatipuru", "Redenção", "Rio Maria", "Rondon do Pará", "Rurópolis", "Salinópolis", "Salvaterra", "Santa Bárbara do Pará", "Santa Cruz do Arari", "Santa Izabel do Pará", "Santa Luzia do Pará", "Santa Maria das Barreiras", "Santa Maria do Pará", "Santana do Araguaia", "Santarém", "Santarém Novo", "Santo Antônio do Tauá", "São Caetano de Odivelas", "São Domingos do Araguaia", "São Domingos do Capim", "São Félix do Xingu", "São Francisco do Pará", "São Geraldo do Araguaia", "São João da Ponta", "São João de Pirabas", "São João do Araguaia", "São Miguel do Guamá", "São Sebastião da Boa Vista", "Sapucaia", "Senador José Porfírio", "Soure", "Tailândia", "Terra Alta", "Terra Santa", "Tomé-Açu", "Tracuateua", "Trairão", "Tucumã", "Tucuruí", "Ulianópolis", "Uruará", "Vigia", "Viseu", "Vitória do Xingu", "Xinguara"]
-OPCOES_SAUDE = ["Marcação de Exame", "Marcação de Consulta", "Marcação de Cirurgia", "Leito de UTI", "Medicamento", "Óculos", "Viagem para Consulta", "Buscar Alta Médica"]
+# Garante que a pasta de uploads exista (Crucial para o Render)
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
-def carregar():
-    if not os.path.exists(DB_FILE):
-        d = {"usuarios": {"junior.araujo21": {"senha": "230808Deus#", "cargo": "ADM", "nome": "Júnior Araújo", "foto_b64": ""}}, "cadastros": [], "financeiro": []}
-        salvar(d); return d
-    with open(DB_FILE, 'r', encoding='utf-8') as f: return json.load(f)
+db = SQLAlchemy(app)
 
-def salvar(d):
-    with open(DB_FILE, 'w', encoding='utf-8') as f: json.dump(d, f, indent=4, ensure_ascii=False)
+# --- MODELOS (BANCO DE DADOS) ---
 
-def format_tel(v):
-    v = re.sub(r'\D', '', v)
-    if len(v) == 11: return f"({v[:2]}) {v[2:7]}-{v[7:]}"
-    return v
+class Usuario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    login = db.Column(db.String(50), unique=True, nullable=False)
+    senha = db.Column(db.String(50), nullable=False)
+    nivel = db.Column(db.String(20)) # ADM, CANDIDATO, COORDENADOR, LIDERANÇA
+    cargo = db.Column(db.String(50))
+    municipio = db.Column(db.String(100))
+    pai_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
+    foto_perfil = db.Column(db.String(200), default='logo_default.png')
+    fundo_login = db.Column(db.String(200), default='default_bg.jpg')
 
-CSS_STYLE = """
-<style>
-    :root { --laranja: #FF6600; --azul: #004AAD; --fundo: #F8F9FA; }
-    body { background: var(--fundo); font-family: 'Segoe UI', sans-serif; margin-bottom: 90px; }
-    .header-lux { background: white; border-bottom: 5px solid var(--laranja); padding: 25px 10px; text-align: center; border-radius: 0 0 35px 35px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    .foto-perfil { width: 95px; height: 95px; border-radius: 20px; object-fit: contain; border: 2px solid var(--laranja); background: white; }
-    .card-premium { background: white; border-radius: 20px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 12px; border-left: 6px solid var(--laranja); }
-    .btn-orange { background: var(--laranja); color: white; border-radius: 50px; font-weight: bold; border: none; padding: 14px; }
-    .btn-blue { background: var(--azul); color: white; border-radius: 50px; font-weight: bold; border: none; padding: 14px; }
-    .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #ddd; z-index: 1000; }
-    .nav-item { text-align: center; color: var(--azul); font-size: 11px; text-decoration: none; font-weight: bold; }
-</style>
-"""
+class Eleitor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome_completo = db.Column(db.String(150), nullable=False)
+    titulo_eleitoral = db.Column(db.String(20))
+    zona = db.Column(db.String(10))
+    secao = db.Column(db.String(10))
+    rua = db.Column(db.String(200))
+    numero = db.Column(db.String(20))
+    bairro = db.Column(db.String(100))
+    municipio = db.Column(db.String(100))
+    lider_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
+    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
 
-HTML_LOGIN = """
-<!DOCTYPE html>
-<html lang="pt-br">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-""" + CSS_STYLE + """
-</head>
-<body class="bg-white d-flex align-items-center justify-content-center" style="height: 100vh;">
-    <div style="width: 100%; max-width: 320px;" class="text-center">
-        {% if adm_foto %}<img src="data:image/png;base64,{{ adm_foto }}" style="max-width:250px; margin-bottom:20px;">
-        {% else %}<h2 class="text-primary fw-bold mb-4">SISTEMA JÚNIOR ARAÚJO</h2>{% endif %}
-        <form method="POST">
-            <input type="text" name="login" class="form-control rounded-pill mb-2 p-3 bg-light border-0" placeholder="Usuário" required>
-            <input type="password" name="senha" class="form-control rounded-pill mb-3 p-3 bg-light border-0" placeholder="Senha" required>
-            <button class="btn btn-orange w-100 shadow">ENTRAR</button>
-        </form>
-    </div>
-</body></html>
-"""
+class AcaoSocial(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    eleitor_id = db.Column(db.Integer, db.ForeignKey('eleitor.id'))
+    tipo = db.Column(db.String(50))
+    servico = db.Column(db.String(100))
+    descricao = db.Column(db.Text)
+    status = db.Column(db.String(50), default='AGUARDANDO ATENDIMENTO')
+    documento = db.Column(db.String(200))
+    data_registro = db.Column(db.DateTime, default=datetime.utcnow)
 
-HTML_DASH = """
-<!DOCTYPE html>
-<html lang="pt-br">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-""" + CSS_STYLE + """
-</head>
-<body>
-    <div class="header-lux mb-4">
-        {% if user.foto_b64 %}<img src="data:image/png;base64,{{ user.foto_b64 }}" class="foto-perfil mb-2">
-        {% else %}<i class="bi bi-person-circle text-muted" style="font-size: 50px;"></i>{% endif %}
-        <h6 class="fw-bold mb-0 text-uppercase">{{ user.nome }}</h6>
-        <span class="badge bg-light text-primary border small">{{ user.cargo }}</span>
-    </div>
+class Despesa(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    valor = db.Column(db.Float, nullable=False)
+    descricao = db.Column(db.String(200))
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
+    lancado_por = db.Column(db.Integer)
+    data = db.Column(db.DateTime, default=datetime.utcnow)
 
-    <div class="container">
-        <div class="row g-2 mb-4 text-center">
-            <div class="col-6"><div class="bg-white p-3 rounded-4 shadow-sm"><b>{{ total_cadastros }}</b><br><small class="text-muted small">VOTOS</small></div></div>
-            <div class="col-6"><div class="bg-white p-3 rounded-4 shadow-sm"><b>R$ {{ total_fin }}</b><br><small class="text-muted small">DESPESAS</small></div></div>
-        </div>
+class Midia(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(100))
+    arquivo = db.Column(db.String(200))
+    criado_por = db.Column(db.Integer)
 
-        <div class="d-grid gap-2 mb-4">
-            <button class="btn btn-outline-primary rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#mPerfil">MINHA FOTO</button>
-            {% if user.cargo in ['ADM', 'CANDIDATO'] %}
-                <button class="btn btn-blue" data-bs-toggle="modal" data-bs-target="#mEquipe">GERENCIAR EQUIPE</button>
-                <button class="btn btn-danger rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#mFin">LANÇAR DESPESA</button>
-            {% endif %}
-            {% if user.cargo == 'ADM' %}
-                <button class="btn btn-dark rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#mSenhas">CONTROLE DE USUÁRIOS</button>
-            {% endif %}
-        </div>
+# --- LISTAS OFICIAIS ---
 
-        <h6 class="fw-bold text-muted mb-3">VOTOS POR MUNICÍPIO</h6>
-        {% for mun, qtd in stats_mun.items() %}
-            <div class="bg-white p-3 rounded-4 shadow-sm mb-2 d-flex justify-content-between align-items-center">
-                <span class="fw-bold text-uppercase">{{ mun }}</span>
-                <span class="badge bg-primary rounded-pill">{{ qtd }}</span>
-            </div>
-        {% endfor %}
+MUNICIPIOS_PA = [
+    "Abaetetuba", "Abel Figueiredo", "Acará", "Afuá", "Água Azul do Norte", "Alenquer", "Almeirim", "Altamira",
+    "Anajás", "Ananindeua", "Anapu", "Augusto Corrêa", "Aurora do Pará", "Aveiro", "Bagre", "Baião",
+    "Bannach", "Barcarena", "Belém", "Belterra", "Benevides", "Bom Jesus do Tocantins", "Bonito",
+    "Bragança", "Brasil Novo", "Brejo Grande do Araguaia", "Breu Branco", "Breves", "Bujaru",
+    "Cachoeira do Arari", "Cachoeira do Piriá", "Cametá", "Canaã dos Carajás", "Capanema", "Capitão Poço",
+    "Castanhal", "Chaves", "Colares", "Conceição do Araguaia", "Concórdia do Pará", "Cumaru do Norte",
+    "Curionópolis", "Curuá", "Curuçá", "Dom Eliseu", "Eldorado do Carajás", "Faro", "Floresta do Araguaia",
+    "Garrafão do Norte", "Goianésia do Pará", "Igarapé-Açu", "Igarapé-Miri", "Inhangapi", "Ipixuna do Pará",
+    "Irituia", "Itaituba", "Itupiranga", "Jacareacanga", "Jacundá", "Juruti", "Limoeiro do Ajuru",
+    "Mãe do Rio", "Magalhães Barata", "Marabá", "Maracanã", "Marapanim", "Marituba", "Medicilândia",
+    "Melgaço", "Mocajuba", "Moju", "Mojuí dos Campos", "Monte Alegre", "Muaná", "Nova Esperança do Piriá",
+    "Nova Ipixuna", "Nova Timboteua", "Novo Progresso", "Novo Repartimento", "Óbidos", "Oeiras do Pará",
+    "Oriximiná", "Ourém", "Ourilândia do Norte", "Pacajá", "Palestina do Araguaia", "Paragominas",
+    "Parauapebas", "Pau D'Arco", "Peixe-Boi", "Piçarra", "Placas", "Ponta de Pedras", "Portel",
+    "Porto de Moz", "Prainha", "Primavera", "Quatipuru", "Redenção", "Rio Maria", "Rondon do Pará",
+    "Rurópolis", "Salinópolis", "Salvaterra", "Santa Bárbara do Pará", "Santa Cruz do Arari",
+    "Santa Izabel do Pará", "Santa Luzia do Pará", "Santa Maria das Barreiras", "Santa Maria do Pará",
+    "Santana do Araguaia", "Santarém", "Santarém Novo", "Santo Antônio do Tauá", "São Caetano de Odivelas",
+    "São Domingos do Araguaia", "São Domingos do Capim", "São Félix do Xingu", "São Francisco do Pará",
+    "São Geraldo do Araguaia", "São João da Ponta", "São João de Pirabas", "São João do Araguaia",
+    "São Miguel do Guamá", "São Sebastião da Boa Vista", "Sapucaia", "Senador José Porfírio", "Soure",
+    "Tailândia", "Terra Alta", "Terra Santa", "Tomé-Açu", "Tracuateua", "Trairão", "Tucumã", "Tucuruí",
+    "Ulianópolis", "Uruará", "Vigia", "Viseu", "Vitória do Xingu", "Xinguara"
+]
 
-        <hr>
-        <h6 class="fw-bold text-muted mb-3">LISTAGEM</h6>
-        {% for c in lista %}
-        <div class="card card-premium p-3">
-            <div class="d-flex justify-content-between">
-                <h6 class="fw-bold text-primary mb-0">{{ c.nome }}</h6>
-                <a href="/excluir_reg/{{c.id}}" class="text-danger" onclick="return confirm('Excluir eleitor?')"><i class="bi bi-trash-fill"></i></a>
-            </div>
-            <p class="small mb-2 mt-2">
-                <b>Título:</b> {{c.titulo}} (Z:{{c.zona}} S:{{c.secao}})<br>
-                <b>Tel:</b> {{c.contato}}<br>
-                <i class="bi bi-geo-alt"></i> {{c.rua}}, {{c.numero}} - {{c.bairro}} ({{c.municipio}})<br>
-                <span class="text-orange small"><b>Por:</b> {{ c.nome_quem_cadastrou }}</span>
-            </p>
-            <div class="bg-light p-2 rounded small">
-                <b>AÇÕES (ADM):</b>
-                {% if user.cargo == 'ADM' %}<button class="btn btn-sm text-primary float-end p-0 fw-bold" data-bs-toggle="modal" data-bs-target="#mAcoes{{ loop.index }}">EDITAR</button>{% endif %}
-                <div class="mt-2">{% for a in c.acoes %}<span class="badge bg-white text-dark border me-1">{{ a }}</span>{% endfor %}</div>
-            </div>
-        </div>
+SERVICOS_SAUDE_SOCIAL = [
+    "UTI", "Cirurgia", "Exame Complexo", "Ressonância", "Tomografia", "Consultas em Geral", "Consulta Especializada",
+    "Medicamento", "Cesta Básica", "Cadeira de Rodas", "Auxílio Funeral",
+    "Natal Solidário", "Ação Cidadã", "Dia das Crianças",
+    "Jurídico", "Documentação", "Outros"
+]
 
-        <div class="modal fade" id="mAcoes{{ loop.index }}" tabindex="-1">
-            <div class="modal-dialog"><form action="/update_acoes/{{c.id}}" method="POST" class="modal-content">
-                <div class="modal-body">
-                    <h6 class="fw-bold mb-3">AÇÕES PARA: {{ c.nome }}</h6>
-                    <div class="form-check"><input class="form-check-input" type="checkbox" name="acs" value="AÇÃO CIDADÃ" {% if 'AÇÃO CIDADÃ' in c.acoes %}checked{% endif %}> AÇÃO CIDADÃ</div>
-                    <div class="form-check"><input class="form-check-input" type="checkbox" name="acs" value="NATAL SOLIDÁRIO" {% if 'NATAL SOLIDÁRIO' in c.acoes %}checked{% endif %}> NATAL SOLIDÁRIO</div>
-                    <hr><label class="fw-bold small">OPÇÕES DE SAÚDE:</label>
-                    {% for s_opt in opcoes_saude %}
-                        <div class="form-check"><input class="form-check-input" type="checkbox" name="acs" value="SAÚDE: {{ s_opt }}" {% if 'SAÚDE: '~s_opt in c.acoes %}checked{% endif %}> {{ s_opt }}</div>
-                    {% endfor %}
-                    <button class="btn btn-orange w-100 mt-4">SALVAR ALTERAÇÕES</button>
-                </div>
-            </form></div>
-        </div>
-        {% endfor %}
-    </div>
+# --- FUNÇÕES DE AUXÍLIO ---
 
-    <div class="modal fade" id="mSenhas" tabindex="-1">
-        <div class="modal-dialog modal-fullscreen-sm-down"><div class="modal-content">
-            <div class="modal-header fw-bold">USUÁRIOS DO SISTEMA</div>
-            <div class="modal-body">
-                {% for login, u_info in todos_usuarios.items() %}
-                    <div class="border-bottom py-3 d-flex justify-content-between align-items-center">
-                        <div>
-                            <b class="text-primary">{{ u_info.nome }}</b> ({{ u_info.cargo }})<br>
-                            <small>Login: {{ login }} | Senha: <b>{{ u_info.senha }}</b></small>
-                        </div>
-                        {% if login != 'junior.araujo21' %}
-                        <a href="/excluir_user/{{ login }}" class="btn btn-sm btn-outline-danger">REMOVER</a>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-        </div></div>
-    </div>
+def get_user():
+    if 'user_id' in session:
+        if session['user_id'] == 0:
+            return Usuario.query.filter_by(login='junior.araujo21').first()
+        return Usuario.query.get(session['user_id'])
+    return None
 
-    <div class="modal fade" id="mPerfil" tabindex="-1"><div class="modal-dialog"><form action="/update_foto" method="POST" enctype="multipart/form-data" class="modal-content"><div class="modal-body text-center"><h6 class="fw-bold mb-3">MINHA FOTO</h6><input type="file" name="foto" class="form-control mb-3" accept="image/*" required><button class="btn btn-blue w-100">SALVAR</button></div></form></div></div>
-    <div class="modal fade" id="mFin" tabindex="-1"><div class="modal-dialog"><form action="/add_fin" method="POST" class="modal-content"><div class="modal-body"><h6 class="fw-bold mb-3">DESPESA</h6><input type="text" name="desc" placeholder="Descrição" class="form-control mb-2" required><input type="number" step="0.01" name="valor" placeholder="Valor" class="form-control mb-3" required><button class="btn btn-danger w-100">SALVAR</button></div></form></div></div>
-    
-    <div class="modal fade" id="mEquipe" tabindex="-1"><div class="modal-dialog"><form action="/add_user" method="POST" class="modal-content"><div class="modal-body"><h6 class="fw-bold text-primary mb-3">NOVO MEMBRO</h6><select name="cargo" id="cSel" class="form-select mb-2" onchange="logic()" required><option value="">Cargo...</option>{% if user.cargo == 'ADM' %}<option value="CANDIDATO">CANDIDATO</option>{% endif %}<option value="COORDENADOR">COORDENADOR</option><option value="LIDERANÇA">LIDERANÇA</option></select><div id="dCand" style="display:none;"><select name="pos" id="posSel" class="form-select mb-2" onchange="logic()">{% for cp in cargos %}<option value="{{ cp }}">{{ cp }}</option>{% endfor %}</select></div><div id="dMun" style="display:none;"><select name="mun" class="form-select mb-2">{% for m in munis %}<option value="{{ m }}">{{ m }}</option>{% endfor %}</select></div><input type="text" name="nome" placeholder="Nome" class="form-control mb-2" required><input type="text" name="login" placeholder="Login" class="form-control mb-2" required><input type="text" name="senha" placeholder="Senha" class="form-control mb-3" required><button class="btn btn-blue w-100">CADASTRAR</button></div></form></div></div>
+# --- ROTAS DO SISTEMA ---
 
-    <div class="modal fade" id="mCad" tabindex="-1"><div class="modal-dialog"><form action="/add_reg" method="POST" class="modal-content"><div class="modal-body"><h5 class="fw-bold text-primary mb-3 text-center">NOVO ELEITOR</h5><input type="text" name="nome" placeholder="Nome" class="form-control mb-2" required><input type="text" name="contato" placeholder="Tel" class="form-control mb-2" required><div class="row g-1 mb-2"><div class="col-6"><input type="text" name="titulo" placeholder="Título" class="form-control" required></div><div class="col-3"><input type="text" name="zona" placeholder="Z" class="form-control" required></div><div class="col-3"><input type="text" name="secao" placeholder="S" class="form-control" required></div></div><input type="text" name="rua" placeholder="Rua" class="form-control mb-2"><input type="text" name="bairro" placeholder="Bairro" class="form-control mb-3"><button class="btn btn-orange w-100">SALVAR</button></div></form></div></div>
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
 
-    <div class="nav-bottom">
-        <a href="/dash" class="nav-item"><i class="bi bi-house-door-fill fs-3"></i><br>INÍCIO</a>
-        <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#mCad"><i class="bi bi-person-plus-fill fs-3"></i><br>NOVO</a>
-        <a href="/logout" class="nav-item text-danger"><i class="bi bi-door-open-fill fs-3"></i><br>SAIR</a>
-    </div>
-
-    <script>
-        function logic() {
-            let c = document.getElementById('cSel').value;
-            let p = document.getElementById('posSel').value;
-            document.getElementById('dCand').style.display = (c === 'CANDIDATO') ? 'block' : 'none';
-            document.getElementById('dMun').style.display = (c === 'LIDERANÇA' || (c === 'CANDIDATO' && (p === 'PREFEITO' || p === 'VEREADOR'))) ? 'block' : 'none';
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body></html>
-"""
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    d = carregar()
+    config = Usuario.query.filter_by(login='junior.araujo21').first()
     if request.method == 'POST':
-        l, s = request.form.get('login').lower().strip(), request.form.get('senha')
-        if l in d['usuarios'] and d['usuarios'][l]['senha'] == s:
-            session['u'] = l
-            return redirect(url_for('dash'))
-    return render_template_string(HTML_LOGIN, adm_foto=d['usuarios']['junior.araujo21'].get('foto_b64'))
+        u_in = request.form.get('login')
+        p_in = request.form.get('senha')
+        if u_in == 'junior.araujo21' and p_in == '230808Deus#':
+            session.update({'user_id': 0, 'nivel': 'ADM'})
+            return redirect(url_for('dashboard'))
+        u = Usuario.query.filter_by(login=u_in, senha=p_in).first()
+        if u:
+            session.update({'user_id': u.id, 'nivel': u.nivel})
+            return redirect(url_for('dashboard'))
+        flash("Credenciais inválidas", "danger")
+    return render_template('login.html', config=config)
 
-@app.route('/dash')
-def dash():
-    if 'u' not in session: return redirect(url_for('login'))
-    d = carregar(); u = d['usuarios'][session['u']]
-    meu_login = session['u']
-    if u['cargo'] == 'ADM': lista = d['cadastros']
-    elif u['cargo'] == 'CANDIDATO': lista = [c for c in d['cadastros'] if c['pai'] == meu_login]
-    else: lista = [c for c in d['cadastros'] if c['r_por'] == meu_login]
-    stats_mun = {}
-    for c in lista: stats_mun[c['municipio']] = stats_mun.get(c['municipio'], 0) + 1
-    total_fin = sum(float(f['valor']) for f in d['financeiro'] if u['cargo'] == 'ADM' or f['quem'] == meu_login)
-    return render_template_string(HTML_DASH, user=u, lista=lista, stats_mun=stats_mun, todos_usuarios=d['usuarios'], munis=MUNICIPIOS_PA, cargos=CARGOS_POLITICOS, total_cadastros=len(lista), total_fin=f"{total_fin:,.2f}", opcoes_saude=OPCOES_SAUDE)
+@app.route('/dashboard')
+def dashboard():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    if u.nivel == 'ADM':
+        total_eleitores = Eleitor.query.count()
+        total_equipe = Usuario.query.filter(Usuario.login != 'junior.araujo21').count()
+        ranking_query = db.session.query(Usuario.nome, db.func.count(Eleitor.id).label('total'))\
+            .join(Eleitor, Eleitor.lider_id == Usuario.id)\
+            .group_by(Usuario.id).order_by(db.text('total DESC')).limit(5).all()
+    else:
+        equipe = Usuario.query.filter_by(pai_id=u.id).all()
+        ids_equipe = [m.id for m in equipe]
+        ids_equipe.append(u.id)
+        total_eleitores = Eleitor.query.filter(Eleitor.lider_id.in_(ids_equipe)).count()
+        total_equipe = len(equipe)
+        ranking_query = db.session.query(Usuario.nome, db.func.count(Eleitor.id).label('total'))\
+            .join(Eleitor, Eleitor.lider_id == Usuario.id)\
+            .filter(Usuario.id.in_(ids_equipe))\
+            .group_by(Usuario.id).order_by(db.text('total DESC')).limit(5).all()
+    return render_template('dashboard.html', user=u, total_eleitores=total_eleitores, total_equipe=total_equipe, ranking=ranking_query)
 
-@app.route('/update_foto', methods=['POST'])
-def update_foto():
-    d = carregar(); f = request.files['foto']
-    if f: d['usuarios'][session['u']]['foto_b64'] = base64.b64encode(f.read()).decode('utf-8')
-    salvar(d); return redirect(url_for('dash'))
+@app.route('/compartilhar')
+def compartilhar():
+    u = get_user()
+    lideranca_nome = u.nome if u else "JUNIOR ARAÚJO"
+    return render_template('cadastro_apoiador_externo.html', lideranca=lideranca_nome, municipios=MUNICIPIOS_PA)
 
-@app.route('/add_user', methods=['POST'])
-def add_user():
-    d = carregar(); l_n = request.form.get('login').lower().strip()
-    d['usuarios'][l_n] = {"nome": request.form.get('nome'), "senha": request.form.get('senha'), "cargo": request.form.get('cargo'), "pai": session['u'], "cad_por": d['usuarios'][session['u']]['nome'], "posicao": request.form.get('pos'), "municipio": request.form.get('mun'), "foto_b64": ""}
-    salvar(d); return redirect(url_for('dash'))
+@app.route('/eleitor/novo', methods=['GET', 'POST'])
+def novo_eleitor():
+    u = get_user()
+    if request.method == 'POST':
+        lider_id = u.id if u else 1
+        novo = Eleitor(
+            nome_completo=request.form.get('nome_completo'),
+            titulo_eleitoral=request.form.get('titulo_eleitoral'),
+            zona=request.form.get('zona'),
+            secao=request.form.get('secao'),
+            rua=request.form.get('rua'),
+            numero=request.form.get('numero'),
+            bairro=request.form.get('bairro'),
+            municipio=request.form.get('municipio'),
+            lider_id=lider_id
+        )
+        db.session.add(novo)
+        db.session.commit()
+        if u:
+            flash("Eleitor cadastrado com sucesso!", "success")
+            return redirect(url_for('dashboard'))
+        else:
+            return "<h1>Obrigado pelo seu apoio! Cadastro realizado com sucesso.</h1>"
+    return render_template('cadastro_eleitor.html', user=u, municipios=MUNICIPIOS_PA)
 
-@app.route('/excluir_user/<login_user>')
-def excluir_user(login_user):
-    d = carregar()
-    if session.get('u') == 'junior.araujo21' and login_user != 'junior.araujo21':
-        if login_user in d['usuarios']: del d['usuarios'][login_user]
-        salvar(d)
-    return redirect(url_for('dash'))
+@app.route('/usuarios/lista')
+def lista_usuarios():
+    u = get_user()
+    if not u or u.nivel == 'LIDERANÇA':
+        flash("Acesso não permitido", "danger")
+        return redirect(url_for('dashboard'))
 
-@app.route('/add_reg', methods=['POST'])
-def add_reg():
-    d = carregar(); u = d['usuarios'][session['u']]
-    novo = {"id": str(uuid.uuid4()), "nome": request.form.get('nome'), "contato": format_tel(request.form.get('contato')), "titulo": request.form.get('titulo'), "zona": request.form.get('zona'), "secao": request.form.get('secao'), "rua": request.form.get('rua'), "numero": request.form.get('numero', ''), "bairro": request.form.get('bairro'), "municipio": u.get('municipio') or 'Pará', "r_por": session['u'], "nome_quem_cadastrou": u['nome'], "pai": u.get('pai') or session['u'], "acoes": []}
-    d['cadastros'].append(novo); salvar(d); return redirect(url_for('dash'))
+    if u.nivel == 'ADM':
+        lista = Usuario.query.filter(Usuario.login != 'junior.araujo21').all()
+    else:
+        lista = Usuario.query.filter_by(pai_id=u.id).all()
 
-# ROTA PARA ADM EDITAR AÇÕES DA PESSOA
-@app.route('/update_acoes/<rid>', methods=['POST'])
-def update_acoes(rid):
-    d = carregar()
-    if session.get('u') != 'junior.araujo21': return redirect(url_for('dash'))
-    selecionadas = request.form.getlist('acs')
-    for c in d['cadastros']:
-        if c['id'] == rid: c['acoes'] = selecionadas
-    salvar(d); return redirect(url_for('dash'))
+    return render_template('lista_usuarios.html', usuarios=lista, user=u)
 
-@app.route('/excluir_reg/<rid>')
-def excluir_reg(rid):
-    d = carregar()
-    d['cadastros'] = [c for c in d['cadastros'] if c['id'] != rid]
-    salvar(d); return redirect(url_for('dash'))
+@app.route('/usuarios/novo', methods=['GET', 'POST'])
+def cadastro_usuario():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
 
-@app.route('/add_fin', methods=['POST'])
-def add_fin():
-    d = carregar()
-    d['financeiro'].append({"desc": request.form.get('desc'), "valor": request.form.get('valor'), "quem": session['u']})
-    salvar(d); return redirect(url_for('dash'))
+    if request.method == 'POST':
+        nivel_sel = request.form.get('nivel')
+        cargo_sel = request.form.get('cargo')
+        municipio_final = None
+
+        if nivel_sel == 'CANDIDATO' and cargo_sel in ['DEPUTADO ESTADUAL', 'DEPUTADO FEDERAL', 'GOVERNADOR', 'SENADOR', 'PRESIDENTE']:
+            municipio_final = None
+        else:
+            municipio_final = request.form.get('municipio')
+
+        novo = Usuario(
+            nome=request.form.get('nome'),
+            login=request.form.get('login'),
+            senha=request.form.get('senha'),
+            nivel=nivel_sel,
+            cargo=cargo_sel,
+            municipio=municipio_final,
+            pai_id=u.id
+        )
+        db.session.add(novo)
+        db.session.commit()
+        flash("Membro cadastrado com sucesso!", "success")
+        return redirect(url_for('lista_usuarios'))
+
+    return render_template('cadastro_usuario.html', user=u, municipios=MUNICIPIOS_PA)
+
+# --- NOVA ROTA: ALTERAR FOTO DE PERFIL (CANDIDATO, COORD, LIDER) ---
+@app.route('/perfil/foto', methods=['POST'])
+def alterar_foto_perfil():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    
+    file = request.files.get('foto_perfil')
+    if file:
+        filename = secure_filename(f"user_{u.id}_{file.filename}")
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        u.foto_perfil = filename
+        db.session.commit()
+        flash("Foto de perfil atualizada!", "success")
+    return redirect(url_for('dashboard'))
+
+@app.route('/saude/urgente', methods=['GET', 'POST'])
+def saude_urgente():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    if request.method == 'POST':
+        file = request.files.get('documento')
+        fname = secure_filename(file.filename) if file else None
+        if fname: file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+        nova = AcaoSocial(
+            eleitor_id=request.form.get('eleitor_id'), servico=request.form.get('servico'),
+            descricao=request.form.get('descricao'), documento=fname
+        )
+        db.session.add(nova)
+        db.session.commit()
+    eleitores = Eleitor.query.filter_by(lider_id=u.id).all()
+    urgencias = db.session.query(AcaoSocial, Eleitor).join(Eleitor).all()
+    return render_template('urgente.html', user=u, eleitores=eleitores, urgencias=urgencias, servicos=SERVICOS_SAUDE_SOCIAL)
+
+@app.route('/midia/gerenciar', methods=['GET', 'POST'])
+def gerenciar_midia():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    if request.method == 'POST' and u.nivel in ['ADM', 'CANDIDATO']:
+        file = request.files.get('arquivo')
+        if file:
+            fname = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+            nova = Midia(titulo=request.form.get('titulo'), arquivo=fname, criado_por=u.id)
+            db.session.add(nova)
+            db.session.commit()
+    midias = Midia.query.all()
+    return render_template('midias.html', user=u, midias=midias)
+
+@app.route('/despesas/lancar', methods=['GET', 'POST'])
+def lancar_despesas():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    if request.method == 'POST':
+        nova = Despesa(
+            valor=float(request.form.get('valor')),
+            descricao=request.form.get('descricao'),
+            usuario_id=u.id,
+            lancado_por=u.id
+        )
+        db.session.add(nova)
+        db.session.commit()
+        flash("Despesa lançada com sucesso!", "success")
+        return redirect(url_for('dashboard'))
+    return render_template('lancar_despesa.html', user=u)
+
+@app.route('/adm/config', methods=['GET', 'POST'])
+def adm_config():
+    u = get_user()
+    if not u or u.nivel != 'ADM':
+        flash("Acesso restrito ao Administrador", "danger")
+        return redirect(url_for('dashboard'))
+    u_master = Usuario.query.filter_by(login='junior.araujo21').first()
+    if request.method == 'POST':
+        f_p = request.files.get('perfil')
+        f_b = request.files.get('fundo')
+        if f_p:
+            n_p = secure_filename(f_p.filename)
+            f_p.save(os.path.join(app.config['UPLOAD_FOLDER'], n_p))
+            u_master.foto_perfil = n_p
+        if f_b:
+            n_b = secure_filename(f_b.filename)
+            f_b.save(os.path.join(app.config['UPLOAD_FOLDER'], n_b))
+            u_master.fundo_login = n_b
+        db.session.commit()
+        flash("Configurações salvas com sucesso!", "success")
+    return render_template('config_adm.html', user=u)
 
 @app.route('/logout')
-def logout(): session.clear(); return redirect(url_for('login'))
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        if not Usuario.query.filter_by(login='junior.araujo21').first():
+            master = Usuario(nome="JUNIOR ARAUJO", login="junior.araujo21", senha="230808Deus#", nivel="ADM")
+            db.session.add(master)
+            db.session.commit()
+    
+    # Configuração para o Render usar a porta correta
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)

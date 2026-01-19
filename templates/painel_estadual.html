@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block conteudo %}
+
+<h4>Painel Estadual — Pará</h4>
+
+<div class="alert alert-success">
+Total de Eleitores Consolidados: {{ total }}
+</div>
+
+<table class="table table-striped">
+<tr><th>Município</th><th>Total</th></tr>
+{% for m, t in ranking %}
+<tr><td>{{ m }}</td><td>{{ t }}</td></tr>
+{% endfor %}
+</table>
+
+<a href="/painel_nacional" class="btn btn-primary">
+Ver Painel Nacional
+</a>
+
+{% endblock %}

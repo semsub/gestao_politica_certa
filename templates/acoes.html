@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Ações{% endblock %}
+
+{% block content %}
+<h2>Todas as Ações</h2>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Tipo</th>
+        <th>Descrição</th>
+        <th>Eleitor</th>
+    </tr>
+    {% for a in acoes %}
+    <tr>
+        <td>{{ a.id }}</td>
+        <td>{{ a.tipo }}</td>
+        <td>{{ a.descricao }}</td>
+        <td>{{ a.eleitor_id }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

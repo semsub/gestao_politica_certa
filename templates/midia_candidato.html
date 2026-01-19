@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-3">
+    <h4 class="fw-bold gold-text text-center mb-4">MÍDIAS DO CANDIDATO</h4>
+    
+    <div class="row g-3">
+        {% for m in midias %}
+        <div class="col-12 col-md-6">
+            <div class="card-luxo p-3 text-center border">
+                <h6 class="fw-bold text-dark">{{ m.titulo }}</h6>
+                <div class="bg-light rounded-4 mb-3 p-4">
+                    <i class="bi bi-file-earmark-play-fill display-1 text-primary"></i>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="/static/uploads/{{ m.arquivo }}" download class="btn btn-dark rounded-pill">
+                        <i class="bi bi-download me-2"></i> BAIXAR
+                    </a>
+                    <a href="https://wa.me/?text=Confira a nova mídia do nosso candidato: {{ request.url_root }}static/uploads/{{ m.arquivo }}" 
+                       target="_blank" class="btn btn-success rounded-pill">
+                        <i class="bi bi-whatsapp me-2"></i> COMPARTILHAR
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

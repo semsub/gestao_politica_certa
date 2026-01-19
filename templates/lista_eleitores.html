@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Eleitores</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h2>Eleitores</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Título</th>
+                <th>Zona</th>
+                <th>Seção</th>
+                <th>Município</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in eleitores %}
+            <tr>
+                <td>{{ e.nome }}</td>
+                <td>{{ e.titulo }}</td>
+                <td>{{ e.zona }}</td>
+                <td>{{ e.secao }}</td>
+                <td>{{ e.municipio }}</td>
+                <td>{{ e.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Nova Ação{% endblock %}
+
+{% block content %}
+<h2>Cadastrar Ação para {{ eleitor.nome }}</h2>
+<form method="POST">
+    <label>Tipo:</label>
+    <select name="tipo">
+        {% for t in tipos %}
+        <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+    </select>
+    <label>Descrição:</label>
+    <textarea name="descricao"></textarea>
+    <button type="submit">Cadastrar</button>
+</form>
+{% endblock %}

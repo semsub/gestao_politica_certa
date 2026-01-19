@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row animate__animated animate__fadeIn">
+    <div class="col-md-4">
+        <div class="card-luxo p-4 mb-4 shadow border-start border-gold" style="border-left: 5px solid var(--ouro) !important;">
+            <h4 class="gold-text fw-bold mb-3"><i class="bi bi-plus-circle me-2"></i>Solicitar Ação</h4>
+            <form action="/saude/urgente" method="POST" enctype="multipart/form-data">
+                
+                <div class="mb-3">
+                    <label class="small fw-bold text-secondary">PACIENTE / BENEFICIÁRIO</label>
+                    <select name="eleitor_id" class="form-select rounded-pill border-gold" required>
+                        <option value="">Selecione o Eleitor...</option>
+                        {% for e in eleitores %}
+                        <option value="{{ e.id }}">{{ e.nome_completo }} ({{ e.municipio }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-secondary">TIPO DE SERVIÇO</label>
+                    <select name="servico" class="form-select rounded-pill" required>
+                        <option value="">Selecione o serviço...</option>
+                        <optgroup label="🩺 SAÚDE">
+                            <option value="Leito de UTI">Leito de UTI</option>
+                            <option value="Cirurgia de Urgência">Cirurgia de Urgência</option>
+                            <option value="Exame de Alta Complexidade">Exame de Alta Complexidade</option>
+                            <option value="Consulta Especializada">Consulta Especializada</option>
+                            <option value="Medicamento de Alto Custo">Medicamento de Alto Custo</option>
+                            <option value="Tratamento Fora do Domicílio (TFD)">TFD</option>
+                        </optgroup>
+                        <optgroup label="🤝 SOCIAL / CIDADANIA">
+                            <option value="Cesta Básica / Segurança Alimentar">Cesta Básica</option>
+                            <option value="Cadeira de Rodas / Prótese">Cadeira de Rodas / Prótese</option>
+                            <option value="Auxílio Funeral">Auxílio Funeral</option>
+                            <option value="Assessoria Jurídica">Assessoria Jurídica</option>
+                            <option value="Regularização de Documentos">Documentação (RG/CPF/Título)</option>
+                            <option value="Projeto Natal Solidário">Natal Solidário</option>
+                            <option value="Ação Cidadã (Geral)">Ação Cidadã</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-secondary">DESCRIÇÃO DO CASO / OBSERVAÇÕES</label>
+                    <textarea name="descricao" class="form-control rounded-4" rows="3" placeholder="Detalhes importantes..."></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="small fw-bold text-secondary">ANEXAR LAUDO OU DOCUMENTO (PDF/IMG)</label>
+                    <input type="file" name="documento" class="form-control rounded-pill">
+                </div>
+
+                <button type="submit" class="btn btn-ouro w-100 py-3 shadow">
+                    <i class="bi bi-send-fill me-2"></i>ENVIAR PARA O GABINETE
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card-luxo p-4 shadow">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold m-0"><i class="bi bi-clipboard-data me-2"></i>Fila de Atendimento</h4>
+                <span class="badge bg-dark rounded-pill px-3">{{ urgencias|length }} Pedidos</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr class="small text-uppercase">
+                            <th>Beneficiário / Origem</th>
+                            <th>Serviço Solicitado</th>
+                            <th>Status Atual</th>
+                            <th class="text-center">Doc.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acao, eleitor in urgencias %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold">{{ eleitor.nome_completo }}</div>
+                                <div class="small text-muted"><i class="bi bi-geo-alt"></i> {{ eleitor.municipio }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-info text-dark">{{ acao.servico }}</span>
+                                <div class="x-small text-muted mt-1" style="font-size: 0.75rem;">Solicitado em: {{ acao.data_registro.strftime('%d/%m/%Y') }}</div>
+                            </td>
+                            <td>
+                                {% if user.nivel in ['ADM', 'CANDIDATO'] %}
+                                <form action="/saude/status/{{ acao.id }}" method="POST">
+                                    <select name="novo_status" class="form-select form-select-sm rounded-pill fw-bold 
+                                        {% if acao.status == 'RESOLVIDO' %} text-success border-success 
+                                        {% elif acao.status == 'EM ANÁLISE' %} text-primary border-primary
+                                        {% else %} text-warning border-warning {% endif %}" 
+                                        onchange="this.form.submit()">
+                                        <option value="AGUARDANDO ATENDIMENTO" {% if acao.status == 'AGUARDANDO ATENDIMENTO' %}selected{% endif %}>⏳ Aguardando</option>
+                                        <option value="EM ANÁLISE" {% if acao.status == 'EM ANÁLISE' %}selected{% endif %}>🔎 Em Análise</option>
+                                        <option value="RESOLVIDO" {% if acao.status == 'RESOLVIDO' %}selected{% endif %}>✅ Resolvido</option>
+                                    </select>
+                                </form>
+                                {% else %}
+                                <span class="badge rounded-pill 
+                                    {% if acao.status == 'RESOLVIDO' %} bg-success 
+                                    {% elif acao.status == 'EM ANÁLISE' %} bg-primary
+                                    {% else %} bg-warning text-dark {% endif %} px-3">
+                                    {{ acao.status }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if acao.documento %}
+                                <a href="/static/uploads/{{ acao.documento }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-circle">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                </a>
+                                {% else %}
+                                <i class="bi bi-dash-lg text-muted"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if not urgencias %}
+            <div class="text-center py-5">
+                <i class="bi bi-emoji-smile display-4 text-muted"></i>
+                <p class="text-muted mt-2">Nenhuma solicitação pendente no momento.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container text-center py-5 animate__animated animate__fadeIn">
+    <div class="card-luxo p-5 d-inline-block shadow-lg" style="max-width: 500px;">
+        <i class="bi bi-qr-code-scan gold-text display-1"></i>
+        <h2 class="fw-bold mt-4">Expanda sua Base</h2>
+        <p class="text-muted">Gere seu link exclusivo e envie para novos eleitores se cadastrarem na sua rede.</p>
+        
+        <div class="input-group mb-4 shadow-sm">
+            <input type="text" value="{{ link }}" id="meuLink" class="form-control border-0 bg-light p-3" readonly>
+            <button class="btn btn-dark px-4" onclick="copy()">Copiar</button>
+        </div>
+
+        <div class="d-grid gap-2">
+            <a href="https://wa.me/?text=Olá! É uma honra ter você conosco. Sua adesão fortalece nossa caminhada por um Pará melhor. Juntos somos mais fortes! Cadastre-se aqui: {{ link }}" 
+               target="_blank" class="btn btn-success py-3 rounded-pill fw-bold">
+               <i class="bi bi-whatsapp me-2"></i> ENVIAR NO WHATSAPP
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function copy() {
+    var copyText = document.getElementById("meuLink");
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value);
+    alert("Link Copiado!");
+}
+</script>
+{% endblock %}

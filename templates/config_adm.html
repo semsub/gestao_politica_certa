@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center animate__animated animate__fadeIn">
+    <div class="col-md-8">
+        <div class="card-luxo p-5 shadow">
+            <div class="text-center mb-4">
+                <h2 class="gold-text fw-bold text-uppercase">Configurações Master</h2>
+                <p class="text-muted">Personalize a identidade visual do seu sistema</p>
+            </div>
+
+            <form action="/adm/config" method="POST" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="p-3 border rounded-4 text-center bg-light">
+                            <i class="bi bi-person-bounding-box display-4 gold-text"></i>
+                            <h6 class="fw-bold mt-2">Foto de Perfil ADM</h6>
+                            <p class="small text-muted">Aparece na barra lateral</p>
+                            
+                            <div class="mb-3">
+                                <img src="/static/uploads/{{ user.foto_perfil }}" class="rounded-circle border border-3 border-warning mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
+                                <input type="file" name="perfil" class="form-control form-control-sm rounded-pill">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="p-3 border rounded-4 text-center bg-light">
+                            <i class="bi bi-image display-4 text-primary"></i>
+                            <h6 class="fw-bold mt-2">Fundo da Tela de Login</h6>
+                            <p class="small text-muted">Aparece para todos ao entrar</p>
+                            
+                            <div class="mb-3">
+                                <div class="rounded-3 border border-2 border-primary mb-3 shadow-sm mx-auto" 
+                                     style="width: 150px; height: 80px; background: url('/static/uploads/{{ user.fundo_login }}') center/cover;">
+                                </div>
+                                <input type="file" name="fundo" class="form-control form-control-sm rounded-pill">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="alert alert-info border-0 rounded-4 small">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Nota:</strong> Use imagens leves (PNG ou JPG) para manter o carregamento do sistema rápido em dispositivos móveis.
+                </div>
+
+                <button type="submit" class="btn btn-ouro w-100 py-3 shadow mt-2">
+                    <i class="bi bi-check-circle-fill me-2"></i>SALVAR ALTERAÇÕES VISUAIS
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-luxo {
+        background: white;
+        border-radius: 25px;
+        border: none;
+    }
+    .border-warning {
+        border-color: var(--ouro) !important;
+    }
+</style>
+{% endblock %}

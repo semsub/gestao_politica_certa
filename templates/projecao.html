@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block conteudo %}
+
+<h4>Projeção Eleitoral - Candidato {{ candidato_id }}</h4>
+<div id="map"></div>
+
+<script>
+const map = L.map('map').setView([-1.455, -48.504], 5);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+{% for z, total in zonas.items() %}
+L.circle([{{ -1.455 + loop.index0*0.01 }}, {{ -48.504 + loop.index0*0.01 }}], {
+    color: 'red',
+    radius: {{ total * 50 }}
+}).addTo(map).bindPopup("Zona/Secção: {{ z }} - {{ total }} eleitores");
+{% endfor %}
+</script>
+
+{% endblock %}
