@@ -5,17 +5,17 @@
         <div class="flex-shrink-0 position-relative">
             <form action="{{ url_for('alterar_foto_perfil') }}" method="POST" enctype="multipart/form-data" id="formFotoPerfil">
                 <img src="/static/uploads/{{ user.foto_perfil if user.foto_perfil else 'logo_default.png' }}"
-                     class="rounded-circle border border-2 border-warning shadow" 
+                     class="rounded-circle border border-2 border-warning shadow"
                      style="width: 75px; height: 75px; object-fit: cover;">
-                
-                <label for="inputFoto" class="position-absolute bottom-0 end-0 bg-warning rounded-circle d-flex align-items-center justify-content-center shadow" 
+
+                <label for="inputFoto" class="position-absolute bottom-0 end-0 bg-warning rounded-circle d-flex align-items-center justify-content-center shadow"
                        style="width: 28px; height: 28px; cursor: pointer; border: 2px solid #0A192F;">
                     <i class="bi bi-camera-fill text-dark" style="font-size: 0.9rem;"></i>
                     <input type="file" id="inputFoto" name="foto_perfil" hidden accept="image/*" onchange="document.getElementById('formFotoPerfil').submit()">
                 </label>
             </form>
         </div>
-        
+
         <div class="ms-3">
             <h4 class="fw-bold mb-0 text-uppercase">Olá, {{ user.nome.split()[0] }}!</h4>
             <span class="badge bg-warning text-dark fw-bold">{{ user.nivel }}</span>
@@ -42,60 +42,56 @@
 </div>
 
 {% if user.nivel in ['ADM', 'CANDIDATO'] %}
-<div class="row mb-4 animate__animated animate__fadeInUp">
-    <div class="col-12">
-        <div class="card-luxo p-4 text-center">
-            <h6 class="fw-bold text-uppercase mb-3"><i class="bi bi-share-fill me-2"></i>Compartilhar Link de Cadastro Externo</h6>
-
-            <div class="mb-3">
-                <img src="https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=http://{{ request.host }}/compartilhar&choe=UTF-8"
-                     alt="QR Code de Compartilhamento" class="img-fluid border p-2 bg-white shadow-sm">
-            </div>
-
-            <div class="input-group mb-2" style="max-width: 400px; margin: 0 auto;">
-                <input type="text" id="linkCompartilhar" class="form-control form-control-sm" value="http://{{ request.host }}/compartilhar" readonly>
-                <button class="btn btn-warning btn-sm fw-bold" onclick="copiarLink()">COPIAR</button>
-            </div>
-            <small class="text-muted">Aponte a câmera do celular para o QR Code ou copie o link acima.</small>
+<div class="card-luxo p-3 mb-4">
+    <form method="GET" action="{{ url_for('dashboard') }}" class="row g-2 align-items-center">
+        <div class="col-8 col-md-10">
+            <select name="municipio" class="form-select border-warning">
+                <option value="">Filtrar por Município (Ver Todos)</option>
+                {% for m in municipios %}
+                <option value="{{ m }}" {% if request.args.get('municipio') == m %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
         </div>
-    </div>
+        <div class="col-4 col-md-2">
+            <button type="submit" class="btn btn-warning w-100 fw-bold">FILTRAR</button>
+        </div>
+    </form>
 </div>
 {% endif %}
 
-{% if user.nivel in ['ADM', 'CANDIDATO'] %}
-<div class="row mb-4 animate__animated animate__fadeInUp">
-    <div class="col-12">
-        <div class="card-luxo p-4 shadow-sm">
-            <h5 class="fw-bold mb-4 gold-text text-uppercase"><i class="bi bi-graph-up-arrow me-2"></i>Ranking de Desempenho (Top 5)</h5>
-            <div class="table-responsive">
-                <table class="table table-borderless align-middle">
-                    <thead>
-                        <tr class="text-muted small">
-                            <th>LIDERANÇA</th>
-                            <th>PROCESSO</th>
-                            <th class="text-end">TOTAL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for nome, total in ranking %}
-                        <tr>
-                            <td width="30%"><span class="fw-bold text-dark">{{ nome }}</span></td>
-                            <td>
-                                <div class="progress" style="height: 10px; border-radius: 10px;">
-                                    {% set percent = (total / total_eleitores * 100) if total_eleitores > 0 else 0 %}
-                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ percent }}%;"></div>
-                                </div>
-                            </td>
-                            <td class="text-end fw-bold gold-text" width="15%">{{ total }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="card-luxo p-4 mb-4 shadow-sm animate__animated animate__fadeInUp">
+    <h5 class="fw-bold mb-4 gold-text text-uppercase"><i class="bi bi-list-check me-2"></i>Eleitores Cadastrados</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr class="small text-muted">
+                    <th>NOME</th>
+                    <th>MUNICÍPIO</th>
+                    <th>LÍDER</th>
+                    <th class="text-end">AÇÃO</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for eleitor, lider_nome in eleitores %}
+                <tr>
+                    <td><div class="fw-bold text-dark">{{ eleitor.nome_completo }}</div></td>
+                    <td>{{ eleitor.municipio }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ lider_nome }}</span></td>
+                    <td class="text-end">
+                        {% if user.nivel == 'ADM' %}
+                        <a href="{{ url_for('remover_eleitor', id=eleitor.id) }}" class="text-danger" onclick="return confirm('Excluir este eleitor?')">
+                            <i class="bi bi-trash-fill fs-5"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center text-muted">Nenhum eleitor encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
-{% endif %}
 
 <div class="row g-3">
     <div class="col-6 col-md-3">
@@ -134,21 +130,10 @@
     {% endif %}
 </div>
 
-<script>
-    function copiarLink() {
-        var copyText = document.getElementById("linkCompartilhar");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999);
-        document.execCommand("copy");
-        alert("Link copiado com sucesso!");
-    }
-</script>
-
 <style>
     .hover-zoom { transition: 0.3s; }
     .hover-zoom:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1) !important; }
     .card-luxo { border: none; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transition: 0.3s; background: white; }
     .gold-text { color: #D4AF37; }
-    .progress-bar { transition: width 1.5s ease-in-out; }
 </style>
 {% endblock %}

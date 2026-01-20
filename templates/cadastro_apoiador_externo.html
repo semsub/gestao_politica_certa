@@ -5,64 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CADASTRO DE APOIADOR</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { 
-            background-color: #050b1a; 
-            color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .container-main {
-            max-width: 900px;
-            margin: 40px auto;
-            border: 2px solid #D4AF37;
-            border-radius: 15px;
-            padding: 30px;
-            background-color: #0a192f;
-        }
-        .header-title {
-            color: #D4AF37;
-            text-align: center;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        .lideranca-info {
-            text-align: center;
-            font-size: 0.9rem;
-            margin-bottom: 30px;
-        }
-        .lideranca-nome { font-weight: bold; }
-        
-        .form-label {
-            font-weight: 500;
-            color: #f8f9fa;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-        .form-control, .form-select {
-            background-color: white;
-            border-radius: 5px;
-            border: none;
-            margin-bottom: 15px;
-            height: 45px;
-        }
-        .btn-confirmar {
-            background-color: #D4AF37;
-            color: black;
-            font-weight: bold;
-            text-transform: uppercase;
-            width: 100%;
-            height: 55px;
-            border: none;
-            border-radius: 8px;
-            margin-top: 20px;
-            transition: 0.3s;
-        }
-        .btn-confirmar:hover {
-            background-color: #bfa030;
-            transform: scale(1.01);
-        }
-        .row-compact { margin-bottom: 0; }
+        body { background-color: #050b1a; color: white; font-family: 'Segoe UI', sans-serif; }
+        .container-main { max-width: 900px; margin: 40px auto; border: 2px solid #D4AF37; border-radius: 15px; padding: 30px; background-color: #0a192f; }
+        .header-title { color: #D4AF37; text-align: center; font-weight: bold; text-transform: uppercase; }
+        .lideranca-info { text-align: center; font-size: 0.9rem; margin-bottom: 30px; }
+        .form-control, .form-select { background-color: white; border: none; margin-bottom: 15px; height: 45px; }
+        .btn-confirmar { background-color: #D4AF37; color: black; font-weight: bold; width: 100%; height: 55px; border: none; border-radius: 8px; margin-top: 20px; }
+        .btn-whatsapp { background-color: #25D366; color: white; font-weight: bold; width: 100%; height: 55px; border: none; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -70,49 +21,57 @@
 <div class="container">
     <div class="container-main shadow-lg">
         <h2 class="header-title">CADASTRO DE APOIADOR</h2>
-        <div class="lideranca-info">
-            Liderança Responsável: <span class="lideranca-nome">{{ lideranca }}</span>
+        <div class="lideranca-info">Liderança Responsável: <span class="fw-bold">{{ lideranca }}</span></div>
+
+        {% if user %}
+        <div class="mb-4 p-3 border border-secondary rounded text-center">
+            <p class="small text-white-50">Compartilhe este link com seu eleitor pelo WhatsApp:</p>
+            <a href="https://wa.me/?text=Olá! Faça seu cadastro de apoio ao Junior Araújo através deste link: http://{{ request.host }}/compartilhar" target="_blank" class="btn btn-whatsapp">
+                <i class="bi bi-whatsapp me-2"></i> ENVIAR PELO WHATSAPP
+            </a>
         </div>
+        <hr class="border-secondary">
+        {% endif %}
 
         <form action="{{ url_for('novo_eleitor') }}" method="POST">
             <div class="mb-3">
-                <label class="form-label">Nome Completo</label>
+                <label class="form-label small fw-bold">NOME COMPLETO</label>
                 <input type="text" name="nome_completo" class="form-control" required>
             </div>
 
-            <div class="row row-compact">
+            <div class="row">
                 <div class="col-md-6">
-                    <label class="form-label">Título Eleitoral</label>
+                    <label class="form-label small fw-bold">TÍTULO ELEITORAL</label>
                     <input type="text" name="titulo_eleitoral" class="form-control">
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Zona</label>
-                    <input type="text" name="zona" class="form-control" placeholder="Zona">
+                <div class="col-md-3 col-6">
+                    <label class="form-label small fw-bold">ZONA</label>
+                    <input type="text" name="zona" class="form-control">
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">Seção</label>
+                <div class="col-md-3 col-6">
+                    <label class="form-label small fw-bold">SEÇÃO</label>
                     <input type="text" name="secao" class="form-control">
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Rua</label>
+                <label class="form-label small fw-bold">RUA / ENDEREÇO</label>
                 <input type="text" name="rua" class="form-control">
             </div>
 
-            <div class="row row-compact">
-                <div class="col-md-4">
-                    <label class="form-label">Número</label>
+            <div class="row">
+                <div class="col-4">
+                    <label class="form-label small fw-bold">NÚMERO</label>
                     <input type="text" name="numero" class="form-control">
                 </div>
-                <div class="col-md-8">
-                    <label class="form-label">Bairro</label>
+                <div class="col-8">
+                    <label class="form-label small fw-bold">BAIRRO</label>
                     <input type="text" name="bairro" class="form-control" required>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Município</label>
+                <label class="form-label small fw-bold">MUNICÍPIO</label>
                 <select name="municipio" class="form-select" required>
                     <option value="" disabled selected>Selecione o Município</option>
                     {% for m in municipios %}
@@ -121,7 +80,7 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-confirmar">CONFIRMAR APOIO</button>
+            <button type="submit" class="btn btn-confirmar text-uppercase">Confirmar Meu Apoio</button>
         </form>
     </div>
 </div>

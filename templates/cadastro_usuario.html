@@ -14,11 +14,6 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Contato (WhatsApp)</label>
-                    <input type="text" name="contato" class="form-control" placeholder="(91) 9....-....">
-                </div>
-
-                <div class="col-md-4">
                     <label class="form-label fw-bold">Nível de Acesso</label>
                     <select name="nivel" id="nivel_select" class="form-select" required onchange="ajustarCampos()">
                         <option value="" selected disabled>Selecione...</option>
@@ -26,7 +21,7 @@
                         <option value="CANDIDATO">CANDIDATO</option>
                         <option value="COORDENADOR">COORDENADOR</option>
                         <option value="LIDERANÇA">LIDERANÇA</option>
-                        {% elif user.nivel == 'CANDIDATO' %}
+                        {% else %}
                         <option value="COORDENADOR">COORDENADOR</option>
                         <option value="LIDERANÇA">LIDERANÇA</option>
                         {% endif %}
@@ -36,19 +31,19 @@
                 <div class="col-md-4" id="div_cargo" style="display: none;">
                     <label class="form-label fw-bold">Cargo</label>
                     <select name="cargo" id="cargo_select" class="form-select" onchange="ajustarCampos()">
+                        <option value="VEREADOR">VEREADOR</option>
+                        <option value="PREFEITO">PREFEITO</option>
                         <option value="DEPUTADO ESTADUAL">DEPUTADO ESTADUAL</option>
                         <option value="DEPUTADO FEDERAL">DEPUTADO FEDERAL</option>
                         <option value="GOVERNADOR">GOVERNADOR</option>
                         <option value="SENADOR">SENADOR</option>
                         <option value="PRESIDENTE">PRESIDENTE</option>
-                        <option value="PREFEITO">PREFEITO</option>
-                        <option value="VEREADOR">VEREADOR</option>
                     </select>
                 </div>
 
                 <div class="col-md-4" id="div_municipio">
                     <label class="form-label fw-bold">Município de Atuação</label>
-                    <select name="municipio" class="form-select">
+                    <select name="municipio" id="municipio_select" class="form-select">
                         <option value="" selected disabled>Selecione a cidade</option>
                         {% for m in municipios %}
                         <option value="{{ m }}">{{ m }}</option>
@@ -57,13 +52,13 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Login</label>
+                    <label class="form-label fw-bold">Login (Usuário)</label>
                     <input type="text" name="login" class="form-control" required>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Senha</label>
-                    <input type="password" name="senha" class="form-control" required>
+                    <input type="text" name="senha" class="form-control" required>
                 </div>
             </div>
 
@@ -80,24 +75,38 @@ function ajustarCampos() {
     const cargo = document.getElementById('cargo_select').value;
     const divCargo = document.getElementById('div_cargo');
     const divMunicipio = document.getElementById('div_municipio');
+    const municipioSelect = document.getElementById('municipio_select');
 
-    // Lógica para mostrar/esconder Cargo
+    // Lista de cargos que NÃO devem escolher município
+    const cargosSemMunicipio = [
+        'DEPUTADO ESTADUAL', 
+        'DEPUTADO FEDERAL', 
+        'GOVERNADOR', 
+        'SENADOR', 
+        'PRESIDENTE'
+    ];
+
+    // 1. Mostrar/Esconder campo de Cargo
     if (nivel === 'CANDIDATO') {
         divCargo.style.display = 'block';
     } else {
         divCargo.style.display = 'none';
-        divCargo.value = "";
     }
 
-    // Lógica do Município (Regra solicitada)
-    const cargosSemMunicipio = ['DEPUTADO ESTADUAL', 'DEPUTADO FEDERAL', 'GOVERNADOR', 'SENADOR', 'PRESIDENTE'];
-    
+    // 2. Lógica para mostrar/esconder campo de Município
+    // Esconde se for CANDIDATO e estiver em um dos cargos da lista "Sem Município"
     if (nivel === 'CANDIDATO' && cargosSemMunicipio.includes(cargo)) {
         divMunicipio.style.display = 'none';
+        municipioSelect.removeAttribute('required');
+        municipioSelect.value = ""; // Limpa a seleção se ocultar
     } else {
         divMunicipio.style.display = 'block';
+        municipioSelect.setAttribute('required', 'required');
     }
 }
+
+// Executar ao carregar a página para garantir o estado inicial correto
+window.onload = ajustarCampos;
 </script>
 
 <style>
