@@ -25,30 +25,28 @@
     <div class="row">
         <nav class="col-md-2 d-none d-md-block sidebar p-3 shadow">
             <div class="text-center mb-4">
-                <img src="/static/uploads/{{ user.foto_perfil }}" class="rounded-circle perfil-img mb-2">
+                <img src="{{ url_for('static', filename='uploads/' + user.foto_perfil) }}" class="rounded-circle perfil-img mb-2">
                 <h6 class="gold-text fw-bold">{{ user.nome }}</h6>
                 <span class="badge bg-light text-dark small">{{ user.nivel }}</span>
             </div>
             <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link" href="/dashboard"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
-                
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+
                 {% if user.nivel != 'LIDERANÇA' %}
-                <li class="nav-item"><a class="nav-link" href="/usuarios/lista"><i class="bi bi-people me-2"></i> Equipe</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('lista_usuarios') }}"><i class="bi bi-people me-2"></i> Equipe</a></li>
                 {% endif %}
 
-                <li class="nav-item"><a class="nav-link" href="/eleitor/novo"><i class="bi bi-person-plus-fill me-2"></i> Novo Eleitor</a></li>
-                
-                <li class="nav-item"><a class="nav-link" href="/compartilhar"><i class="bi bi-share me-2"></i> Link de Convite</a></li>
-                <li class="nav-item"><a class="nav-link" href="/saude/urgente"><i class="bi bi-hospital me-2"></i> Gabinete Saúde</a></li>
-                
-                <li class="nav-item"><a class="nav-link" href="/midia/gerenciar"><i class="bi bi-play-circle me-2"></i> Mídias</a></li>
-                
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('novo_eleitor') }}"><i class="bi bi-person-plus-fill me-2"></i> Novo Eleitor</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('compartilhar') }}"><i class="bi bi-share me-2"></i> Link de Convite</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('saude_urgente') }}"><i class="bi bi-hospital me-2"></i> Gabinete Saúde</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('gerenciar_midia') }}"><i class="bi bi-play-circle me-2"></i> Mídias</a></li>
+
                 {% if user.nivel in ['ADM', 'CANDIDATO'] %}
-                <li class="nav-item"><a class="nav-link" href="/despesas/lancar"><i class="bi bi-cash-stack me-2"></i> Despesas</a></li>
-                <li class="nav-item"><a class="nav-link" href="/adm/config"><i class="bi bi-gear me-2"></i> Configurações</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('lancar_despesas') }}"><i class="bi bi-cash-stack me-2"></i> Despesas</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('adm_config') }}"><i class="bi bi-gear me-2"></i> Configurações</a></li>
                 {% endif %}
-                
-                <li class="nav-item mt-5"><a class="nav-link text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
+
+                <li class="nav-item mt-5"><a class="nav-link text-danger" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
             </ul>
         </nav>
 
