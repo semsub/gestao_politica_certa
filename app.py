@@ -8,13 +8,21 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "230808Deus#"
 
-# --- CONFIGURAÇÕES ---
+# --- CONFIGURAÇÕES ALTERADAS PARA PERSISTÊNCIA NO RENDER ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
 
-# Garante que a pasta de uploads exista (Crucial para o Render)
+if os.path.exists('/data'):
+    # Configuração para Produção (Render com Disco Persistente)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/junior_araujo_sistemas.db'
+    app.config['UPLOAD_FOLDER'] = '/data/static/uploads'
+else:
+    # Configuração para Desenvolvimento Local
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
+    app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Garante que a pasta de uploads exista
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
@@ -235,12 +243,11 @@ def cadastro_usuario():
 
     return render_template('cadastro_usuario.html', user=u, municipios=MUNICIPIOS_PA)
 
-# --- NOVA ROTA: ALTERAR FOTO DE PERFIL (CANDIDATO, COORD, LIDER) ---
 @app.route('/perfil/foto', methods=['POST'])
 def alterar_foto_perfil():
     u = get_user()
     if not u: return redirect(url_for('login'))
-    
+
     file = request.files.get('foto_perfil')
     if file:
         filename = secure_filename(f"user_{u.id}_{file.filename}")
@@ -334,7 +341,6 @@ if __name__ == '__main__':
             master = Usuario(nome="JUNIOR ARAUJO", login="junior.araujo21", senha="230808Deus#", nivel="ADM")
             db.session.add(master)
             db.session.commit()
-    
-    # Configuração para o Render usar a porta correta
+
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
