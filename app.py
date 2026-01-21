@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import aliased
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from flask_login import login_required, current_user
 
 app = Flask(__name__)
 app.secret_key = "230808Deus#"
@@ -57,7 +58,7 @@ class AcaoSocial(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     eleitor_id = db.Column(db.Integer, db.ForeignKey('eleitor.id'))
     tipo = db.Column(db.String(50)) # AÇÃO CIDADÃ, NATAL SOLIDÁRIO, SAÚDE
-    servico = db.Column(db.String(100)) 
+    servico = db.Column(db.String(100))
     descricao = db.Column(db.Text)
     status = db.Column(db.String(50), default='Aguardando')
     documento = db.Column(db.String(200))
@@ -107,8 +108,8 @@ MUNICIPIOS_PA = [
 ]
 
 SERVICOS_SAUDE = [
-    "Agendamento de Exames", "Agendamento de Consultas", "Agendamento de Cirurgias", 
-    "Leito de UTI", "Medicamentos", "Óculos", "Viagem para Consulta", 
+    "Agendamento de Exames", "Agendamento de Consultas", "Agendamento de Cirurgias",
+    "Leito de UTI", "Medicamentos", "Óculos", "Viagem para Consulta",
     "Busca de Alta Médica", "Nenhuma das Anteriores"
 ]
 
@@ -155,10 +156,9 @@ def login():
 def dashboard():
     u = get_user()
     if not u: return redirect(url_for('login'))
-    
+
     municipio_filtro = request.args.get('municipio')
-    
-    # LÓGICA DE HIERARQUIA: ADM vê tudo, Candidato vê toda sua base recursiva
+
     if u.nivel == 'ADM':
         ids_vistos = [usr.id for usr in Usuario.query.all()]
         total_eleitores = Eleitor.query.count()
@@ -169,10 +169,10 @@ def dashboard():
         total_equipe = Usuario.query.filter(Usuario.id.in_(ids_vistos), Usuario.id != u.id).count()
 
     query_eleitores = db.session.query(Eleitor, Usuario).join(Usuario, Eleitor.lider_id == Usuario.id).filter(Eleitor.lider_id.in_(ids_vistos))
-    
+
     if municipio_filtro:
         query_eleitores = query_eleitores.filter(Eleitor.municipio == municipio_filtro)
-    
+
     eleitores_raw = query_eleitores.all()
 
     ranking = db.session.query(Usuario.nome, db.func.count(Eleitor.id).label('total'))\
@@ -205,7 +205,7 @@ def novo_eleitor():
             flash("Eleitor cadastrado com sucesso!", "success")
             return redirect(url_for('dashboard'))
         return "<h1>Obrigado! Cadastro realizado com sucesso.</h1>"
-    
+
     if request.args.get('template') == 'externo':
         return render_template('cadastro_eleitor_externo.html', user=u_lider, municipios=MUNICIPIOS_PA)
     return render_template('cadastro_eleitor.html', user=u, municipios=MUNICIPIOS_PA)
@@ -243,20 +243,41 @@ def remover_eleitor(id):
 @app.route('/usuarios/lista')
 def lista_usuarios():
     u = get_user()
-    if not u or u.nivel == 'LIDERANÇA': return redirect(url_for('dashboard'))
+    if not u: return redirect(url_for('login'))
     
-    if u.nivel == 'ADM':
-        usuarios = Usuario.query.filter(Usuario.login != 'junior.araujo21').all()
+    if u.nivel == 'ADM' or u.login == 'junior.araujo21':
+        usuarios = Usuario.query.all()
     else:
         ids_vistos = get_hierarquia_ids(u.id)
-        usuarios = Usuario.query.filter(Usuario.id.in_(ids_vistos), Usuario.id != u.id).all()
-    
+        usuarios = Usuario.query.filter(Usuario.id.in_(ids_vistos)).all()
+
     usuarios_info = []
     for usr in usuarios:
-        pai = Usuario.query.get(usr.pai_id)
-        usuarios_info.append({'obj': usr, 'pai_nome': pai.nome if pai else "SISTEMA"})
-        
+        pai = Usuario.query.get(usr.pai_id) if usr.pai_id else None
+        usuarios_info.append({
+            'obj': usr,
+            'pai_nome': pai.nome if pai else "SISTEMA (MASTER)"
+        })
+
     return render_template('lista_usuarios.html', usuarios=usuarios_info, user=u)
+
+@app.route('/usuarios/remover/<int:id>')
+def remover_usuario(id):
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    usuario_a_remover = Usuario.query.get_or_404(id)
+    
+    if u.nivel == 'ADM' or usuario_a_remover.pai_id == u.id:
+        if usuario_a_remover.login == 'junior.araujo21' and u.login != 'junior.araujo21':
+            flash("Ação não permitida!", "danger")
+        else:
+            db.session.delete(usuario_a_remover)
+            db.session.commit()
+            flash(f"Usuário {usuario_a_remover.nome} removido com sucesso!", "success")
+    else:
+        flash("Você não tem permissão para remover este usuário.", "danger")
+        
+    return redirect(url_for('lista_usuarios'))
 
 @app.route('/usuarios/novo', methods=['GET', 'POST'])
 def cadastro_usuario():
@@ -274,28 +295,18 @@ def cadastro_usuario():
         return redirect(url_for('lista_usuarios'))
     return render_template('cadastro_usuario.html', user=u, municipios=MUNICIPIOS_PA)
 
-@app.route('/usuarios/remover/<int:id>')
-def remover_usuario(id):
-    u = get_user()
-    if u and (u.nivel == 'ADM' or u.nivel == 'CANDIDATO'):
-        usuario = Usuario.query.get(id)
-        if usuario:
-            db.session.delete(usuario); db.session.commit()
-            flash("Usuário removido!", "success")
-    return redirect(url_for('lista_usuarios'))
-
 # --- SAÚDE E AÇÕES SOCIAIS ---
 
 @app.route('/saude/urgente', methods=['GET', 'POST'])
 def saude_urgente():
     u = get_user()
     if not u: return redirect(url_for('login'))
-    
+
     if request.method == 'POST':
         file = request.files.get('documento')
         fname = secure_filename(file.filename) if file else None
         if fname: file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
-        
+
         nova = AcaoSocial(
             eleitor_id=request.form.get('eleitor_id'),
             tipo=request.form.get('tipo', 'SAÚDE'),
@@ -307,12 +318,24 @@ def saude_urgente():
         db.session.add(nova); db.session.commit()
         flash("Ação registrada com sucesso!", "success")
 
-    # Filtro hierárquico para ações
     ids_vistos = get_hierarquia_ids(u.id) if u.nivel != 'ADM' else [usr.id for usr in Usuario.query.all()]
     eleitores = Eleitor.query.filter(Eleitor.lider_id.in_(ids_vistos)).all()
     acoes_raw = db.session.query(AcaoSocial, Eleitor).join(Eleitor).filter(Eleitor.lider_id.in_(ids_vistos)).order_by(AcaoSocial.data_registro.desc()).all()
 
     return render_template('urgente.html', user=u, eleitores=eleitores, acoes=acoes_raw, servicos=SERVICOS_SAUDE)
+
+@app.route('/saude/remover/<int:id>')
+def remover_acao_saude(id):
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    acao = AcaoSocial.query.get_or_404(id)
+    if u.nivel == 'ADM' or u.login == 'junior.araujo21':
+        db.session.delete(acao)
+        db.session.commit()
+        flash("Registro de saúde removido permanentemente!", "success")
+    else:
+        flash("Você não tem permissão para remover este registro.", "danger")
+    return redirect(url_for('saude_urgente'))
 
 @app.route('/atualizar_status_saude', methods=['POST'])
 def atualizar_status_saude_ajax():

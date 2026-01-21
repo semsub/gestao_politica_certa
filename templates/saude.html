@@ -1,43 +1,55 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
-<h2>Módulo Saúde</h2>
+<div class="container-fluid mt-2">
+    <div class="card card-luxo bg-dark text-white border-warning p-3 shadow-lg">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold text-uppercase mb-0" style="color: #D4AF37;">
+                <i class="bi bi-hospital me-2"></i> GABINETE DA SAÚDE
+            </h4>
+        </div>
 
-<form method="POST" action="{{ url_for('saude') }}">
-    <select name="acao" required>
-        <option value="">Selecione a Ação</option>
-        <option value="Agendamento de Exames">Agendamento de Exames</option>
-        <option value="Agendamento de Consultas">Agendamento de Consultas</option>
-        <option value="Agendamento de Cirurgias">Agendamento de Cirurgias</option>
-        <option value="Leito de UTI">Leito de UTI</option>
-        <option value="Medicação">Medicação</option>
-        <option value="Óculos">Óculos</option>
-        <option value="Viagem para Consulta">Viagem para Consulta</option>
-        <option value="Busca de Alta Médica">Busca de Alta Médica</option>
-    </select>
-
-    <input type="text" name="eleitor_nome" placeholder="Nome do Eleitor" required>
-    <input type="submit" value="Registrar">
-</form>
-
-<h3>Registros Saúde</h3>
-<table>
-    <thead>
-        <tr>
-            <th>Ação</th>
-            <th>Eleitor</th>
-            <th>Responsável</th>
-            <th>Data</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for registro in saude %}
-        <tr>
-            <td>{{ registro.acao }}</td>
-            <td>{{ registro.eleitor }}</td>
-            <td>{{ registro.responsavel }}</td>
-            <td>{{ registro.data }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle">
+                <thead>
+                    <tr style="color: #D4AF37; border-bottom: 2px solid #D4AF37;">
+                        <th>BENEFICIÁRIO (PESSOA)</th>
+                        <th>SERVIÇO / DATA</th>
+                        <th>ORIGEM (QUEM CADASTROU)</th>
+                        <th class="text-center">AÇÃO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for acao in acoes_saude %}
+                    <tr class="border-secondary">
+                        <td>
+                            <div class="fw-bold text-white">{{ acao.eleitor_nome }}</div>
+                            <small class="text-muted">Mun: {{ acao.municipio }}</small>
+                        </td>
+                        <td>
+                            <div class="badge bg-info text-dark text-uppercase">{{ acao.tipo_servico }}</div>
+                            <div class="small mt-1 text-secondary"><i class="bi bi-calendar-event"></i> {{ acao.data_criacao }}</div>
+                        </td>
+                        <td>
+                            <small class="gold-text"><i class="bi bi-person-badge"></i> {{ acao.lider_nome }}</small>
+                        </td>
+                        <td class="text-center">
+                            {% if user.nivel == 'ADM' %}
+                            <a href="{{ url_for('remover_acao', id=acao.id) }}" 
+                               class="btn btn-sm btn-outline-danger border-0"
+                               onclick="return confirm('Remover este registro de saúde?')">
+                                <i class="bi bi-x-square-fill fs-5"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">Nenhum atendimento de saúde registrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
