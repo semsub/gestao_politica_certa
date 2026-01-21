@@ -4,7 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import aliased
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from flask_login import login_required, current_user
 
 app = Flask(__name__)
 app.secret_key = "230808Deus#"
