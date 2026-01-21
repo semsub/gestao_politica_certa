@@ -9,26 +9,23 @@ app = Flask(__name__)
 app.secret_key = "230808Deus#"
 
 # --- CONFIGURAÇÕES DE DIRETÓRIOS (JÚNIOR ARAÚJO SISTEMAS) ---
+# Usamos caminhos absolutos para garantir que o Render encontre os arquivos
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# LOCALIZAÇÃO DO BANCO DE DADOS E UPLOADS
-# Se estiver no Render, usamos a pasta /opt/render/project/src/ (padrão) ou a interna
-# Para evitar o erro 500, vamos garantir que o SQLite aponte para um local gravável
-if os.environ.get('RENDER'):
-    db_path = os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
-    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+# Define o local do banco de dados na raiz do projeto
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Define a pasta de uploads dentro de static para garantir acesso via URL
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Cria a pasta de uploads se não existir (essencial para não dar erro)
+# Cria a pasta de uploads fisicamente se ela não existir
 if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    try:
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    except Exception as e:
+        print(f"Erro ao criar pasta: {e}")
 
 db = SQLAlchemy(app)
 
@@ -170,11 +167,14 @@ def dashboard():
         ids_vistos = get_hierarquia_ids(u.id)
         total_eleitores = Eleitor.query.filter(Eleitor.lider_id.in_(ids_vistos)).count()
         total_equipe = Usuario.query.filter(Usuario.id.in_(ids_vistos), Usuario.id != u.id).count()
+    
     query_eleitores = db.session.query(Eleitor, Usuario).join(Usuario, Eleitor.lider_id == Usuario.id).filter(Eleitor.lider_id.in_(ids_vistos))
     if municipio_filtro:
         query_eleitores = query_eleitores.filter(Eleitor.municipio == municipio_filtro)
+    
     eleitores_raw = query_eleitores.all()
     ranking = db.session.query(Usuario.nome, db.func.count(Eleitor.id).label('total')).join(Eleitor, Eleitor.lider_id == Usuario.id).filter(Usuario.id.in_(ids_vistos)).group_by(Usuario.id).order_by(db.text('total DESC')).limit(5).all()
+    
     return render_template('dashboard.html', user=u, total_eleitores=total_eleitores, total_equipe=total_equipe, ranking=ranking, eleitores=eleitores_raw, municipios=MUNICIPIOS_PA)
 
 @app.route('/eleitor/novo', methods=['GET', 'POST'])
