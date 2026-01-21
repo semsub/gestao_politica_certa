@@ -11,19 +11,20 @@ app.secret_key = "230808Deus#"
 # --- CONFIGURAÇÕES DE DIRETÓRIOS (JÚNIOR ARAÚJO SISTEMAS) ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# CORREÇÃO PARA O RENDER: O sistema precisa gravar na pasta /data para persistência
+# CORREÇÃO PARA O RENDER: Priorizar caminho persistente se o disco estiver montado
 if os.path.exists('/data'):
     # Caminho para o Render (Disco Persistente)
     UPLOAD_FOLDER = '/data/uploads'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/junior_araujo_sistemas.db'
 else:
-    # Caminho para o seu computador (Local)
+    # Caminho de Fallback (Local ou Render Temporário)
+    # Garante que o sistema não dê Erro 500 se o disco /data não estiver ativo
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Garantir que a pasta de uploads existe (Tratamento de erro para o Render)
+# Garantir que a pasta de uploads existe fisicamente para evitar erro de gravação
 if not os.path.exists(UPLOAD_FOLDER):
     try:
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -287,7 +288,6 @@ def saude_urgente():
         fname = None
         if file and file.filename != '':
             fname = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-            # Caminho absoluto configurado dinamicamente para o Render ou Local
             full_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
             file.save(full_path)
 
@@ -299,9 +299,8 @@ def saude_urgente():
             documento=fname,
             status='Aguardando'
         )
-        db.session.add(nova)
-        db.session.commit()
-        flash("Ação registrada com sucesso!", "success")
+        db.session.add(nova); db.session.commit()
+        flash("Ação registrada!", "success")
         return redirect(url_for('saude_urgente'))
 
     ids_vistos = get_hierarquia_ids(u.id) if u.nivel != 'ADM' else [usr.id for usr in Usuario.query.all()]
