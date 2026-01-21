@@ -1,4 +1,6 @@
-venv/
-*.sqlite3
+*.db
+instance/
 __pycache__/
-.buildozer/
+static/uploads/*
+!static/uploads/logo_default.png
+!static/uploads/default_bg.jpg
