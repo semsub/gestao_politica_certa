@@ -12,11 +12,10 @@ app.secret_key = "230808Deus#"
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # AJUSTE DE CAMINHO PARA O RENDER
-# Usamos caminhos absolutos para evitar que o servidor se perca ao salvar arquivos de saúde
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Garantir que a pasta de uploads existe (Crítico para não dar Erro 500)
+# Garantir que a pasta de uploads existe (Corrigido para evitar IndentationError)
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -94,7 +93,7 @@ MUNICIPIOS_PA = [
     "Castanhal", "Chaves", "Colares", "Conceição do Araguaia", "Concórdia do Pará", "Cumaru do Norte",
     "Curionópolis", "Curuá", "Curuçá", "Dom Eliseu", "Eldorado do Carajás", "Faro", "Floresta do Araguaia",
     "Garrafão do Norte", "Goianésia do Pará", "Igarapé-Açu", "Igarapé-Miri", "Inhangapi", "Ipixuna do Pará",
-    "Irituia", "Itaituba", "Itupiranga", "Jacareacanga", "Jacundá", "Juruti", "Limoeiro do Ajuru",
+    "Irituia", "Itaituba", "Itaituba", "Itupiranga", "Jacareacanga", "Jacundá", "Juruti", "Limoeiro do Ajuru",
     "Mãe do Rio", "Magalhães Barata", "Marabá", "Maracanã", "Marapanim", "Marituba", "Medicilândia",
     "Melgaço", "Mocajuba", "Moju", "Mojuí dos Campos", "Monte Alegre", "Muaná", "Nova Esperança do Piriá",
     "Nova Ipixuna", "Nova Timboteua", "Novo Progresso", "Novo Repartimento", "Óbidos", "Oeiras do Pará",
@@ -283,7 +282,6 @@ def saude_urgente():
         fname = None
         if file and file.filename != '':
             fname = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-            # GARANTIA DE CAMINHO ABSOLUTO PARA O RENDER
             full_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
             file.save(full_path)
         
