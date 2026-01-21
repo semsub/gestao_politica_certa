@@ -1,133 +1,170 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row animate__animated animate__fadeIn">
-    <div class="col-md-4">
-        <div class="card-luxo p-4 mb-4 shadow border-start border-gold" style="border-left: 5px solid var(--ouro) !important;">
-            <h4 class="gold-text fw-bold mb-3"><i class="bi bi-plus-circle me-2"></i>Solicitar Ação</h4>
-            <form action="/saude/urgente" method="POST" enctype="multipart/form-data">
-                
-                <div class="mb-3">
-                    <label class="small fw-bold text-secondary">PACIENTE / BENEFICIÁRIO</label>
-                    <select name="eleitor_id" class="form-select rounded-pill border-gold" required>
-                        <option value="">Selecione o Eleitor...</option>
-                        {% for e in eleitores %}
-                        <option value="{{ e.id }}">{{ e.nome_completo }} ({{ e.municipio }})</option>
-                        {% endfor %}
-                    </select>
-                </div>
+<div class="container-fluid mt-3 mb-5 px-4">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-lg border-0 h-100" style="border-radius: 15px; border-left: 5px solid #D4AF37 !important; background: #fff;">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold gold-text text-uppercase mb-4">
+                        <i class="bi bi-plus-circle-dotted me-2"></i>SOLICITAR AÇÃO
+                    </h5>
+                    
+                    <form action="{{ url_for('saude_urgente') }}" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">PACIENTE / BENEFICIÁRIO</label>
+                            <select name="eleitor_id" class="form-select border-2" required>
+                                <option value="" selected disabled>Selecione o Eleitor...</option>
+                                {% for e in eleitores %}
+                                <option value="{{ e.id }}">{{ e.nome_completo }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-                <div class="mb-3">
-                    <label class="small fw-bold text-secondary">TIPO DE SERVIÇO</label>
-                    <select name="servico" class="form-select rounded-pill" required>
-                        <option value="">Selecione o serviço...</option>
-                        <optgroup label="🩺 SAÚDE">
-                            <option value="Leito de UTI">Leito de UTI</option>
-                            <option value="Cirurgia de Urgência">Cirurgia de Urgência</option>
-                            <option value="Exame de Alta Complexidade">Exame de Alta Complexidade</option>
-                            <option value="Consulta Especializada">Consulta Especializada</option>
-                            <option value="Medicamento de Alto Custo">Medicamento de Alto Custo</option>
-                            <option value="Tratamento Fora do Domicílio (TFD)">TFD</option>
-                        </optgroup>
-                        <optgroup label="🤝 SOCIAL / CIDADANIA">
-                            <option value="Cesta Básica / Segurança Alimentar">Cesta Básica</option>
-                            <option value="Cadeira de Rodas / Prótese">Cadeira de Rodas / Prótese</option>
-                            <option value="Auxílio Funeral">Auxílio Funeral</option>
-                            <option value="Assessoria Jurídica">Assessoria Jurídica</option>
-                            <option value="Regularização de Documentos">Documentação (RG/CPF/Título)</option>
-                            <option value="Projeto Natal Solidário">Natal Solidário</option>
-                            <option value="Ação Cidadã (Geral)">Ação Cidadã</option>
-                        </optgroup>
-                    </select>
-                </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">TIPO DE SERVIÇO</label>
+                            <select name="servico" class="form-select border-2" required>
+                                <option value="" selected disabled>Selecione o serviço...</option>
+                                <optgroup label="🩺 SAÚDE">
+                                    <option value="Leito de UTI">Leito de UTI</option>
+                                    <option value="Cirurgia de Urgência">Cirurgia de Urgência</option>
+                                    <option value="Exame de Alta Complexidade">Exame de Alta Complexidade</option>
+                                    <option value="Consulta Especializada">Consulta Especializada</option>
+                                    <option value="Medicamento de Alto Custo">Medicamento de Alto Custo</option>
+                                    <option value="TFD">TFD (Tratamento Fora de Domicílio)</option>
+                                </optgroup>
+                                <optgroup label="🤝 SOCIAL / CIDADANIA">
+                                    <option value="Cesta Básica">Cesta Básica</option>
+                                    <option value="Cadeira de Rodas / Prótese">Cadeira de Rodas / Prótese</option>
+                                    <option value="Auxílio Funeral">Auxílio Funeral</option>
+                                    <option value="Assessoria Jurídica">Assessoria Jurídica</option>
+                                    <option value="Documentação (RG/CPF/Título)">Documentação (RG/CPF/Título)</option>
+                                    <option value="Natal Solidário">Natal Solidário</option>
+                                    <option value="Ação Cidadã">Ação Cidadã</option>
+                                </optgroup>
+                            </select>
+                        </div>
 
-                <div class="mb-3">
-                    <label class="small fw-bold text-secondary">DESCRIÇÃO DO CASO / OBSERVAÇÕES</label>
-                    <textarea name="descricao" class="form-control rounded-4" rows="3" placeholder="Detalhes importantes..."></textarea>
-                </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">DESCRIÇÃO DO CASO / OBSERVAÇÕES</label>
+                            <textarea name="descricao" class="form-control" rows="3" placeholder="Detalhes importantes..."></textarea>
+                        </div>
 
-                <div class="mb-3">
-                    <label class="small fw-bold text-secondary">ANEXAR LAUDO OU DOCUMENTO (PDF/IMG)</label>
-                    <input type="file" name="documento" class="form-control rounded-pill">
-                </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">ANEXAR LAUDO OU DOCUMENTO (PDF/IMG)</label>
+                            <input type="file" name="documento" class="form-control">
+                        </div>
 
-                <button type="submit" class="btn btn-ouro w-100 py-3 shadow">
-                    <i class="bi bi-send-fill me-2"></i>ENVIAR PARA O GABINETE
-                </button>
-            </form>
+                        <button type="submit" class="btn btn-ouro-full w-100 py-3 fw-bold text-uppercase shadow">
+                            <i class="bi bi-send-check-fill me-2"></i>ENVIAR PARA O GABINETE
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="col-md-8">
-        <div class="card-luxo p-4 shadow">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold m-0"><i class="bi bi-clipboard-data me-2"></i>Fila de Atendimento</h4>
-                <span class="badge bg-dark rounded-pill px-3">{{ urgencias|length }} Pedidos</span>
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-lg border-0 h-100" style="border-radius: 15px; background: #fff;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-person-lines-fill me-2"></i>Fila de Atendimento</h5>
+                        <span class="badge bg-dark rounded-pill">{{ acoes|length }} Pedidos</span>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover">
+                            <thead class="table-light">
+                                <tr class="text-uppercase text-muted small" style="font-size: 0.7rem;">
+                                    <th>Beneficiário / Origem</th>
+                                    <th>Serviço Solicitado</th>
+                                    <th>Status Atual</th>
+                                    <th class="text-center">Doc.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for acao in acoes %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{ acao.nome_eleitor }}</div>
+                                        <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ acao.municipio }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-3">{{ acao.servico }}</span>
+                                        <div class="text-muted mt-1" style="font-size: 0.65rem;">Solicitado em: {{ acao.data }}</div>
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm status-select fw-bold" 
+                                                onchange="atualizarStatus('{{ acao.id }}', this)"
+                                                style="width: 160px; border-radius: 8px; cursor: pointer;
+                                                {% if acao.status == 'Resolvido' %} border-color: #198754; color: #198754; background-color: #e9f7ef;
+                                                {% elif acao.status == 'Aguardando' %} border-color: #ffc107; color: #856404; background-color: #fff3cd;
+                                                {% elif acao.status == 'Em Análise' %} border-color: #0dcaf0; color: #055160; background-color: #cff4fc;
+                                                {% else %} border-color: #6c757d; color: #495057; {% endif %}">
+                                            <option value="Aguardando" {% if acao.status == 'Aguardando' %}selected{% endif %}>⏳ Aguardando</option>
+                                            <option value="Em Análise" {% if acao.status == 'Em Análise' %}selected{% endif %}>🔎 Em Análise</option>
+                                            <option value="Gabinete Saúde" {% if acao.status == 'Gabinete Saúde' %}selected{% endif %}>🏥 Gabinete Saúde</option>
+                                            <option value="Resolvido" {% if acao.status == 'Resolvido' %}selected{% endif %}>✅ Resolvido</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if acao.documento %}
+                                        <a href="{{ url_for('static', filename='uploads/' ~ acao.documento) }}" target="_blank" class="btn btn-sm btn-link text-danger p-0">
+                                            <i class="bi bi-file-earmark-pdf-fill fs-4"></i>
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr class="small text-uppercase">
-                            <th>Beneficiário / Origem</th>
-                            <th>Serviço Solicitado</th>
-                            <th>Status Atual</th>
-                            <th class="text-center">Doc.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for acao, eleitor in urgencias %}
-                        <tr>
-                            <td>
-                                <div class="fw-bold">{{ eleitor.nome_completo }}</div>
-                                <div class="small text-muted"><i class="bi bi-geo-alt"></i> {{ eleitor.municipio }}</div>
-                            </td>
-                            <td>
-                                <span class="badge bg-info text-dark">{{ acao.servico }}</span>
-                                <div class="x-small text-muted mt-1" style="font-size: 0.75rem;">Solicitado em: {{ acao.data_registro.strftime('%d/%m/%Y') }}</div>
-                            </td>
-                            <td>
-                                {% if user.nivel in ['ADM', 'CANDIDATO'] %}
-                                <form action="/saude/status/{{ acao.id }}" method="POST">
-                                    <select name="novo_status" class="form-select form-select-sm rounded-pill fw-bold 
-                                        {% if acao.status == 'RESOLVIDO' %} text-success border-success 
-                                        {% elif acao.status == 'EM ANÁLISE' %} text-primary border-primary
-                                        {% else %} text-warning border-warning {% endif %}" 
-                                        onchange="this.form.submit()">
-                                        <option value="AGUARDANDO ATENDIMENTO" {% if acao.status == 'AGUARDANDO ATENDIMENTO' %}selected{% endif %}>⏳ Aguardando</option>
-                                        <option value="EM ANÁLISE" {% if acao.status == 'EM ANÁLISE' %}selected{% endif %}>🔎 Em Análise</option>
-                                        <option value="RESOLVIDO" {% if acao.status == 'RESOLVIDO' %}selected{% endif %}>✅ Resolvido</option>
-                                    </select>
-                                </form>
-                                {% else %}
-                                <span class="badge rounded-pill 
-                                    {% if acao.status == 'RESOLVIDO' %} bg-success 
-                                    {% elif acao.status == 'EM ANÁLISE' %} bg-primary
-                                    {% else %} bg-warning text-dark {% endif %} px-3">
-                                    {{ acao.status }}
-                                </span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                {% if acao.documento %}
-                                <a href="/static/uploads/{{ acao.documento }}" target="_blank" class="btn btn-sm btn-outline-dark rounded-circle">
-                                    <i class="bi bi-file-earmark-text"></i>
-                                </a>
-                                {% else %}
-                                <i class="bi bi-dash-lg text-muted"></i>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% if not urgencias %}
-            <div class="text-center py-5">
-                <i class="bi bi-emoji-smile display-4 text-muted"></i>
-                <p class="text-muted mt-2">Nenhuma solicitação pendente no momento.</p>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+function atualizarStatus(id, element) {
+    const status = element.value;
+    element.style.opacity = '0.5';
+
+    fetch('/atualizar_status_saude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        element.style.opacity = '1';
+        if (data.success) {
+            // Atualiza cores dinamicamente conforme Imagem 4
+            if (status === 'Resolvido') {
+                element.style.borderColor = '#198754'; element.style.color = '#198754'; element.style.backgroundColor = '#e9f7ef';
+            } else if (status === 'Aguardando') {
+                element.style.borderColor = '#ffc107'; element.style.color = '#856404'; element.style.backgroundColor = '#fff3cd';
+            } else if (status === 'Em Análise') {
+                element.style.borderColor = '#0dcaf0'; element.style.color = '#055160'; element.style.backgroundColor = '#cff4fc';
+            } else {
+                element.style.borderColor = '#6c757d'; element.style.color = '#495057'; element.style.backgroundColor = '#fff';
+            }
+        } else {
+            alert('Erro ao atualizar status.');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        element.style.opacity = '1';
+    });
+}
+</script>
+
+<style>
+    .gold-text { color: #B8860B; }
+    .btn-ouro-full { background: #D4AF37; color: #000; border: none; border-radius: 12px; transition: 0.3s; }
+    .btn-ouro-full:hover { background: #B8860B; color: #fff; transform: translateY(-2px); }
+    .form-control:focus, .form-select:focus { border-color: #D4AF37; box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25); }
+    .table-hover tbody tr:hover { background-color: #fcf8e3; }
+</style>
 {% endblock %}

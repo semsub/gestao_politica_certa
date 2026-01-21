@@ -1,90 +1,56 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CADASTRO DE APOIADOR</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        body { background-color: #050b1a; color: white; font-family: 'Segoe UI', sans-serif; }
-        .container-main { max-width: 900px; margin: 40px auto; border: 2px solid #D4AF37; border-radius: 15px; padding: 30px; background-color: #0a192f; }
-        .header-title { color: #D4AF37; text-align: center; font-weight: bold; text-transform: uppercase; }
-        .lideranca-info { text-align: center; font-size: 0.9rem; margin-bottom: 30px; }
-        .form-control, .form-select { background-color: white; border: none; margin-bottom: 15px; height: 45px; }
-        .btn-confirmar { background-color: #D4AF37; color: black; font-weight: bold; width: 100%; height: 55px; border: none; border-radius: 8px; margin-top: 20px; }
-        .btn-whatsapp { background-color: #25D366; color: white; font-weight: bold; width: 100%; height: 55px; border: none; border-radius: 8px; margin-top: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="container-main shadow-lg">
-        <h2 class="header-title">CADASTRO DE APOIADOR</h2>
-        <div class="lideranca-info">Liderança Responsável: <span class="fw-bold">{{ lideranca }}</span></div>
-
-        {% if user %}
-        <div class="mb-4 p-3 border border-secondary rounded text-center">
-            <p class="small text-white-50">Compartilhe este link com seu eleitor pelo WhatsApp:</p>
-            <a href="https://wa.me/?text=Olá! Faça seu cadastro de apoio ao Junior Araújo através deste link: http://{{ request.host }}/compartilhar" target="_blank" class="btn btn-whatsapp">
-                <i class="bi bi-whatsapp me-2"></i> ENVIAR PELO WHATSAPP
-            </a>
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card-luxo p-4 shadow mb-5">
+        <div class="text-center mb-4">
+            <h2 class="gold-text fw-bold">CADASTRO DE APOIADOR</h2>
+            <p class="text-secondary">Você está sendo indicado por: <br>
+               <span class="badge bg-dark text-gold fs-6 p-2 mt-2">{{ lideranca }}</span>
+            </p>
         </div>
-        <hr class="border-secondary">
-        {% endif %}
 
-        <form action="{{ url_for('novo_eleitor') }}" method="POST">
+        <form method="POST" action="{{ url_for('novo_eleitor') }}">
+            <input type="hidden" name="lider_id" value="{{ lider_id }}">
+
             <div class="mb-3">
-                <label class="form-label small fw-bold">NOME COMPLETO</label>
-                <input type="text" name="nome_completo" class="form-control" required>
+                <label class="small fw-bold text-secondary">NOME COMPLETO</label>
+                <input type="text" name="nome_completo" class="form-control rounded-pill" required>
             </div>
 
             <div class="row">
-                <div class="col-md-6">
-                    <label class="form-label small fw-bold">TÍTULO ELEITORAL</label>
-                    <input type="text" name="titulo_eleitoral" class="form-control">
+                <div class="col-md-4 mb-3">
+                    <label class="small fw-bold text-secondary">TÍTULO ELEITORAL</label>
+                    <input type="text" name="titulo_eleitoral" class="form-control rounded-pill" required>
                 </div>
-                <div class="col-md-3 col-6">
-                    <label class="form-label small fw-bold">ZONA</label>
-                    <input type="text" name="zona" class="form-control">
+                <div class="col-md-4 mb-3">
+                    <label class="small fw-bold text-secondary">ZONA</label>
+                    <input type="text" name="zona" class="form-control rounded-pill" required>
                 </div>
-                <div class="col-md-3 col-6">
-                    <label class="form-label small fw-bold">SEÇÃO</label>
-                    <input type="text" name="secao" class="form-control">
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label small fw-bold">RUA / ENDEREÇO</label>
-                <input type="text" name="rua" class="form-control">
-            </div>
-
-            <div class="row">
-                <div class="col-4">
-                    <label class="form-label small fw-bold">NÚMERO</label>
-                    <input type="text" name="numero" class="form-control">
-                </div>
-                <div class="col-8">
-                    <label class="form-label small fw-bold">BAIRRO</label>
-                    <input type="text" name="bairro" class="form-control" required>
+                <div class="col-md-4 mb-3">
+                    <label class="small fw-bold text-secondary">SEÇÃO</label>
+                    <input type="text" name="secao" class="form-control rounded-pill" required>
                 </div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label small fw-bold">MUNICÍPIO</label>
-                <select name="municipio" class="form-select" required>
-                    <option value="" disabled selected>Selecione o Município</option>
+                <label class="small fw-bold text-secondary">MUNICÍPIO ONDE VOTA</label>
+                <select name="municipio" class="form-select rounded-pill" required>
+                    <option value="">Selecione...</option>
                     {% for m in municipios %}
                     <option value="{{ m }}">{{ m }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <button type="submit" class="btn btn-confirmar text-uppercase">Confirmar Meu Apoio</button>
+            <div class="mb-3">
+                <label class="small fw-bold text-secondary">BAIRRO</label>
+                <input type="text" name="bairro" class="form-control rounded-pill">
+            </div>
+
+            <button type="submit" class="btn btn-ouro w-100 py-3 shadow mt-3">
+                <i class="bi bi-check-lg me-2"></i>CONFIRMAR MEU APOIO
+            </button>
         </form>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

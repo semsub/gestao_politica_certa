@@ -25,18 +25,23 @@
             <div class="p-3 text-center">
                 <h6 class="fw-bold">{{ m.titulo }}</h6>
                 <hr>
-                <div class="d-flex justify-content-around">
-                    <a href="https://wa.me/?text=Confira nosso material: {{ request.url_root }}static/uploads/{{ m.arquivo }}" 
+                <div class="d-flex justify-content-around align-items-center">
+                    <a href="https://wa.me/?text=Confira nosso material: {{ request.url_root }}static/uploads/{{ m.arquivo }}"
                        target="_blank" class="btn btn-sm btn-success rounded-circle">
                         <i class="bi bi-whatsapp"></i>
                     </a>
-                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url_root }}static/uploads/{{ m.arquivo }}" 
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url_root }}static/uploads/{{ m.arquivo }}"
                        target="_blank" class="btn btn-sm btn-primary rounded-circle">
                         <i class="bi bi-facebook"></i>
                     </a>
                     <a href="/static/uploads/{{ m.arquivo }}" download class="btn btn-sm btn-dark rounded-circle">
                         <i class="bi bi-download"></i>
                     </a>
+                    {% if user.nivel in ['ADM', 'CANDIDATO'] %}
+                    <a href="/midia/remover/{{ m.id }}" class="btn btn-sm btn-danger rounded-circle" onclick="return confirm('Deseja excluir esta mídia?')">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
