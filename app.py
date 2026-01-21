@@ -11,25 +11,22 @@ app.secret_key = "230808Deus#"
 # --- CONFIGURAÇÕES DE DIRETÓRIOS (JÚNIOR ARAÚJO SISTEMAS) ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# CORREÇÃO PARA O RENDER: Priorizar caminho persistente se o disco estiver montado
-if os.path.exists('/data'):
-    # Caminho para o Render (Disco Persistente)
-    UPLOAD_FOLDER = '/data/uploads'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/junior_araujo_sistemas.db'
-else:
-    # Caminho de Fallback (Local ou Render Temporário)
-    # Garante que o sistema não dê Erro 500 se o disco /data não estiver ativo
+# LOCALIZAÇÃO DO BANCO DE DADOS E UPLOADS
+# Se estiver no Render, usamos a pasta /opt/render/project/src/ (padrão) ou a interna
+# Para evitar o erro 500, vamos garantir que o SQLite aponte para um local gravável
+if os.environ.get('RENDER'):
+    db_path = os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Garantir que a pasta de uploads existe fisicamente para evitar erro de gravação
+# Cria a pasta de uploads se não existir (essencial para não dar erro)
 if not os.path.exists(UPLOAD_FOLDER):
-    try:
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    except Exception as e:
-        print(f"Erro ao criar pasta de uploads: {e}")
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -300,7 +297,7 @@ def saude_urgente():
             status='Aguardando'
         )
         db.session.add(nova); db.session.commit()
-        flash("Ação registrada!", "success")
+        flash("Ação registrada com sucesso!", "success")
         return redirect(url_for('saude_urgente'))
 
     ids_vistos = get_hierarquia_ids(u.id) if u.nivel != 'ADM' else [usr.id for usr in Usuario.query.all()]
