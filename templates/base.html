@@ -3,135 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JÚNIOR ARAÚJO SISTEMAS - Gestão Política Certa</title>
+    <title>JÚNIOR ARAÚJO SISTEMAS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        :root { --ouro: #D4AF37; --ouro-dark: #B8860B; --dark: #0A192F; --dark-blue: #06101f; }
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        :root { --ouro: #D4AF37; --ouro-dark: #B8860B; --dark: #0A192F; --sidebar-w: 280px; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
         
         /* Sidebar Desktop */
-        .sidebar { background: var(--dark); min-height: 100vh; color: white; transition: all 0.3s; position: fixed; z-index: 1000; }
+        .sidebar { background: var(--dark); min-height: 100vh; color: white; position: fixed; width: var(--sidebar-w); z-index: 1000; border-right: 3px solid var(--ouro); }
         .gold-text { color: var(--ouro); text-transform: uppercase; letter-spacing: 1px; }
-        
-        /* Botões Luxo */
-        .btn-ouro { background: linear-gradient(45deg, var(--ouro-dark), var(--ouro)); color: white; border: none; font-weight: bold; border-radius: 50px; transition: 0.3s; }
-        .btn-ouro:hover { transform: scale(1.05); color: #000; box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4); }
-        
-        /* Cards e Layout */
-        .card-luxo { background: white; border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        .nav-link { color: rgba(255,255,255,0.7); margin: 5px 0; border-radius: 12px; padding: 12px 15px; transition: 0.2s; }
+        .perfil-img { width: 80px; height: 80px; object-fit: cover; border: 2px solid var(--ouro); background: white; margin-bottom: 10px; }
+
+        .nav-link { color: rgba(255,255,255,0.7); margin: 5px 15px; border-radius: 12px; padding: 12px 15px; transition: 0.2s; font-weight: 500; }
+        .nav-link i { color: var(--ouro); margin-right: 10px; font-size: 1.1rem; }
         .nav-link:hover, .nav-link.active { background: var(--ouro); color: var(--dark) !important; font-weight: bold; }
-        .nav-link i { font-size: 1.2rem; }
+        .nav-link:hover i, .nav-link.active i { color: var(--dark); }
+
+        /* Main Content */
+        main { margin-left: var(--sidebar-w); padding: 20px; transition: 0.3s; }
+
+        /* Mobile Adjustments */
+        .mobile-header { display: none; background: var(--dark); padding: 10px 20px; color: white; border-bottom: 2px solid var(--ouro); sticky: top; z-index: 1100; }
         
-        /* Perfil */
-        .perfil-img { width: 60px; height: 60px; object-fit: cover; border: 2px solid var(--ouro); padding: 2px; background: white; }
-        
-        /* Ajustes Mobile */
-        .mobile-header { display: none; background: var(--dark); padding: 10px 20px; color: white; border-bottom: 2px solid var(--ouro); }
-        
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             .sidebar { display: none !important; }
-            .mobile-header { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1100; }
-            main { margin-left: 0 !important; width: 100% !important; }
+            main { margin-left: 0 !important; width: 100%; }
+            .mobile-header { display: flex; align-items: center; justify-content: space-between; }
         }
-        
-        /* Offcanvas (Menu Lateral Mobile) */
-        .offcanvas { background: var(--dark); color: white; width: 280px !important; }
-        .offcanvas-header { border-bottom: 1px solid rgba(212,175,55,0.2); }
+
+        .card-luxo { background: white; border-radius: 15px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-bottom: 4px solid var(--ouro); }
+        .offcanvas { background: var(--dark); color: white; border-right: 3px solid var(--ouro); }
     </style>
 </head>
 <body>
 
 {% if user %}
-<div class="mobile-header shadow">
+<div class="mobile-header shadow-sm">
     <div class="d-flex align-items-center">
-        <img src="{{ url_for('static', filename='uploads/' + user.foto_perfil) }}" class="rounded-circle perfil-img me-2" style="width: 40px; height: 40px;">
-        <span class="gold-text fw-bold small">SISTEMA GPC</span>
+        <img src="{{ url_for('static', filename='uploads/' + user.foto_perfil) }}" class="rounded-circle" style="width: 35px; height: 35px; border: 1px solid var(--ouro);">
+        <span class="gold-text fw-bold ms-2 small">JÚNIOR ARAÚJO</span>
     </div>
-    <button class="btn text-white fs-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuMobile">
-        <i class="bi bi-list gold-text"></i>
+    <button class="btn border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuMobile">
+        <i class="bi bi-list gold-text fs-1"></i>
     </button>
 </div>
 
 <div class="offcanvas offcanvas-start" tabindex="-1" id="menuMobile">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title gold-text fw-bold">MENU PRINCIPAL</h5>
+    <div class="offcanvas-header border-bottom border-secondary">
+        <h5 class="offcanvas-title gold-text">MENU GESTÃO</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>
-    <div class="offcanvas-body">
-        <div class="text-center mb-4">
-            <img src="{{ url_for('static', filename='uploads/' + user.foto_perfil) }}" class="rounded-circle perfil-img mb-2 shadow">
-            <h6 class="gold-text fw-bold mb-0">{{ user.nome }}</h6>
+    <div class="offcanvas-body p-0">
+        <div class="text-center py-4">
+            <img src="{{ url_for('static', filename='uploads/' + user.foto_perfil) }}" class="rounded-circle perfil-img shadow">
+            <h6 class="gold-text mb-0">{{ user.nome }}</h6>
             <small class="text-white-50">{{ user.nivel }}</small>
         </div>
         <nav class="nav flex-column">
-            {{ self.menu_items() }}
+            {% include 'partials/_menu_items.html' %}
         </nav>
     </div>
 </div>
+
+<nav class="sidebar d-none d-lg-block">
+    <div class="text-center py-4">
+        <img src="{{ url_for('static', filename='uploads/' + user.foto_perfil) }}" class="rounded-circle perfil-img shadow">
+        <h6 class="gold-text mb-1">{{ user.nome }}</h6>
+        <span class="badge bg-warning text-dark">{{ user.nivel }}</span>
+    </div>
+    <hr class="mx-3 border-secondary">
+    <div class="nav flex-column">
+        {% include 'partials/_menu_items.html' %}
+    </div>
+</nav>
 {% endif %}
 
-<div class="container-fluid">
-    <div class="row">
-        {% if user %}
-        <nav class="col-md-2 d-none d-md-block sidebar p-3 shadow">
-            <div class="text-center mb-4 mt-3">
-                <img src="{{ url_for('static', filename='uploads/' + user.foto_perfil) }}" class="rounded-circle perfil-img mb-2 shadow">
-                <h6 class="gold-text fw-bold mb-0">{{ user.nome }}</h6>
-                <span class="badge bg-ouro text-dark mt-1" style="font-size: 0.7rem;">{{ user.nivel }}</span>
-            </div>
-            <hr style="border-color: rgba(212,175,55,0.3);">
-            <ul class="nav flex-column">
-                {% block menu_items %}
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> DASHBOARD</a></li>
+<main>
+    <div class="container-fluid">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show rounded-pill shadow-sm mb-4">
+                        {{ message }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-                {% if user.nivel != 'LIDERANÇA' %}
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('lista_usuarios') }}"><i class="bi bi-people-fill me-2"></i> MINHA EQUIPE</a></li>
-                {% endif %}
-
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('novo_eleitor') }}"><i class="bi bi-person-plus-fill me-2"></i> NOVO ELEITOR</a></li>
-                
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('compartilhar') }}"><i class="bi bi-share-fill me-2"></i> LINK DE CONVITE</a></li>
-                
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('saude_urgente') }}"><i class="bi bi-hospital me-2"></i> GABINETE SAÚDE</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('gerenciar_midia') }}"><i class="bi bi-collection-play me-2"></i> MÍDIAS</a></li>
-
-                {% if user.nivel in ['ADM', 'CANDIDATO'] %}
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('lancar_despesas') }}"><i class="bi bi-cash-stack me-2"></i> FINANCEIRO</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('adm_config') }}"><i class="bi bi-gear-fill me-2"></i> CONFIGURAÇÕES</a></li>
-                {% endif %}
-
-                <li class="nav-item mt-5"><a class="nav-link text-danger fw-bold" href="{{ url_for('logout') }}"><i class="bi bi-power me-2"></i> SAIR DO SISTEMA</a></li>
-                {% endblock %}
-            </ul>
-        </nav>
-        {% endif %}
-
-        <main class="{% if user %}col-md-10 ms-sm-auto{% else %}col-12{% endif %} px-md-4 py-4">
-            <div class="container">
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show animate__animated animate__fadeInDown rounded-pill shadow-sm" role="alert">
-                                <i class="bi bi-info-circle me-2"></i> {{ message }} 
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-
-                {% block content %}{% endblock %}
-            </div>
-            
-            <footer class="text-center mt-5 text-secondary small">
-                <p>&copy; 2026 JÚNIOR ARAÚJO SISTEMAS <br> 
-                <span class="gold-text fw-bold">GESTÃO POLÍTICA CERTA</span></p>
-            </footer>
-        </main>
+        {% block content %}{% endblock %}
     </div>
-</div>
+    
+    <footer class="text-center mt-5 py-4 text-secondary small">
+        <p>&copy; 2026 JÚNIOR ARAÚJO SISTEMAS <br>
+        <span class="gold-text fw-bold">GESTÃO POLÍTICA CERTA</span></p>
+    </footer>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -1,0 +1,38 @@
+<a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+    <i class="bi bi-speedometer2"></i> DASHBOARD
+</a>
+
+{% if user.nivel != 'LIDERANÇA' %}
+<a class="nav-link {% if request.endpoint == 'lista_usuarios' %}active{% endif %}" href="{{ url_for('lista_usuarios') }}">
+    <i class="bi bi-people-fill"></i> MINHA EQUIPE
+</a>
+{% endif %}
+
+<a class="nav-link {% if request.endpoint == 'novo_eleitor' %}active{% endif %}" href="{{ url_for('novo_eleitor') }}">
+    <i class="bi bi-person-plus-fill"></i> NOVO ELEITOR
+</a>
+
+<a class="nav-link" href="/eleitor/novo?lider={{ user.id }}&template=externo">
+    <i class="bi bi-share-fill"></i> LINK DE CONVITE
+</a>
+
+<a class="nav-link {% if request.endpoint == 'saude_urgente' %}active{% endif %}" href="{{ url_for('saude_urgente') }}">
+    <i class="bi bi-hospital"></i> GABINETE SAÚDE
+</a>
+
+<a class="nav-link {% if request.endpoint == 'gerenciar_midia' %}active{% endif %}" href="{{ url_for('gerenciar_midia') }}">
+    <i class="bi bi-collection-play"></i> MÍDIAS
+</a>
+
+{% if user.nivel in ['ADM', 'CANDIDATO'] %}
+<a class="nav-link {% if request.endpoint == 'lancar_despesas' %}active{% endif %}" href="{{ url_for('lancar_despesas') }}">
+    <i class="bi bi-cash-stack"></i> FINANCEIRO
+</a>
+<a class="nav-link {% if request.endpoint == 'adm_config' %}active{% endif %}" href="{{ url_for('adm_config') }}">
+    <i class="bi bi-gear-fill"></i> CONFIGURAÇÕES
+</a>
+{% endif %}
+
+<a class="nav-link text-danger fw-bold mt-4" href="{{ url_for('logout') }}">
+    <i class="bi bi-power"></i> SAIR
+</a>

@@ -1,170 +1,98 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<div class="card-luxo p-4 mb-4 animate__animated animate__fadeInDown" style="background: linear-gradient(135deg, #0A192F 0%, #112240 100%); color: white;">
-    <div class="d-flex align-items-center">
-        <div class="flex-shrink-0 position-relative">
-            <form action="{{ url_for('alterar_foto_perfil') }}" method="POST" enctype="multipart/form-data" id="formFotoPerfil">
-                <img src="/static/uploads/{{ user.foto_perfil if user.foto_perfil else 'logo_default.png' }}"
-                     class="rounded-circle border border-2 border-warning shadow"
-                     style="width: 75px; height: 75px; object-fit: cover;">
-
-                <label for="inputFoto" class="position-absolute bottom-0 end-0 bg-warning rounded-circle d-flex align-items-center justify-content-center shadow"
-                       style="width: 28px; height: 28px; cursor: pointer; border: 2px solid #0A192F;">
-                    <i class="bi bi-camera-fill text-dark" style="font-size: 0.9rem;"></i>
-                    <input type="file" id="inputFoto" name="foto_perfil" hidden accept="image/*" onchange="document.getElementById('formFotoPerfil').submit()">
-                </label>
-            </form>
-        </div>
-
-        <div class="ms-3">
-            <h4 class="fw-bold mb-0 text-uppercase">Olá, {{ user.nome.split()[0] }}!</h4>
-            <span class="badge bg-warning text-dark fw-bold">{{ user.nivel }}</span>
-            <small class="d-block text-white-50 mt-1"><i class="bi bi-geo-alt-fill"></i> {{ user.municipio if user.municipio else 'Base Geral Pará' }}</small>
-        </div>
+<div class="animate__animated animate__fadeIn">
+    <div class="card-luxo p-4 mb-4" style="background: #1e293b; color: white;">
+        <h2 class="fw-bold mb-0 text-uppercase">OLÁ, {{ user.nome.split(' ')[0] }}!</h2>
+        <p class="text-warning mb-0"><i class="bi bi-geo-alt-fill"></i> BASE GERAL PARÁ | JÚNIOR ARAÚJO SISTEMAS</p>
     </div>
-</div>
 
-<div class="row g-3 mb-4 animate__animated animate__fadeInUp">
-    <div class="col-6 col-md-4">
-        <div class="card-luxo p-3 text-center border-bottom border-4 border-warning h-100">
-            <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.7rem;">Total de Apoios</small>
-            <h2 class="fw-bold gold-text mb-0">{{ total_eleitores if total_eleitores else 0 }}</h2>
-        </div>
-    </div>
-    {% if user.nivel in ['ADM', 'CANDIDATO', 'COORDENADOR'] %}
-    <div class="col-6 col-md-4">
-        <div class="card-luxo p-3 text-center border-bottom border-4 border-primary h-100">
-            <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.7rem;">Minha Equipe</small>
-            <h2 class="fw-bold text-primary mb-0">{{ total_equipe if total_equipe else 0 }}</h2>
-        </div>
-    </div>
-    {% endif %}
-    <div class="col-12 col-md-4 d-none d-md-block">
-        <div class="card-luxo p-3 text-center border-bottom border-4 border-success h-100">
-            <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 0.7rem;">Meta Global</small>
-            <h2 class="fw-bold text-success mb-0">100%</h2>
-        </div>
-    </div>
-</div>
-
-{% if user.nivel in ['ADM', 'CANDIDATO'] %}
-<div class="card-luxo p-3 mb-4 shadow-sm border-0">
-    <form method="GET" action="{{ url_for('dashboard') }}" class="row g-2 align-items-center">
-        <div class="col-8 col-md-10">
-            <select name="municipio" class="form-select border-warning rounded-pill">
-                <option value="">Todos os Municípios do Pará</option>
-                {% for m in municipios %}
-                <option value="{{ m }}" {% if request.args.get('municipio') == m %}selected{% endif %}>{{ m }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-4 col-md-2">
-            <button type="submit" class="btn btn-warning w-100 fw-bold rounded-pill">FILTRAR</button>
-        </div>
-    </form>
-</div>
-{% endif %}
-
-{% if ranking %}
-<div class="card-luxo p-4 mb-4 shadow-sm border-0">
-    <h5 class="fw-bold mb-3 gold-text text-uppercase small"><i class="bi bi-trophy-fill me-2"></i>Ranking de Cadastros</h5>
-    <div class="row">
-        {% for nome, total in ranking %}
-        <div class="col-md-4 mb-2">
-            <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded-pill border">
-                <span class="ms-2 fw-bold small text-truncate" style="max-width: 150px;">{{ nome }}</span>
-                <span class="badge bg-dark text-gold rounded-pill">{{ total }}</span>
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4">
+            <div class="card-luxo p-3 text-center">
+                <small class="text-muted fw-bold d-block">TOTAL APOIOS</small>
+                <h2 class="fw-bold text-dark mb-0">{{ total_eleitores }}</h2>
             </div>
         </div>
-        {% endfor %}
+        <div class="col-6 col-md-4">
+            <div class="card-luxo p-3 text-center">
+                <small class="text-muted fw-bold d-block">MINHA EQUIPE</small>
+                <h2 class="fw-bold text-dark mb-0">{{ total_equipe }}</h2>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card-luxo p-3 text-center">
+                <small class="text-muted fw-bold d-block">META GLOBAL</small>
+                <h2 class="fw-bold text-success mb-0">100%</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-luxo p-3 mb-4">
+        <form action="{{ url_for('dashboard') }}" method="GET" class="row g-2">
+            <div class="col-md-9">
+                <select name="municipio" class="form-select border-0 bg-light p-3">
+                    <option value="">Filtrar por Município (Todo o Pará)</option>
+                    {% for m in municipios %}
+                    <option value="{{ m }}" {% if request.args.get('municipio') == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-dark w-100 p-3 fw-bold border-0" style="background: var(--ouro); color: var(--dark);">
+                    <i class="bi bi-funnel"></i> FILTRAR
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card-luxo overflow-hidden">
+        <div class="p-3 bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 gold-text"><i class="bi bi-people"></i> APOIADORES NA BASE</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th>NOME COMPLETO</th>
+                        <th>TÍTULO / ZONA / SEÇÃO</th>
+                        <th>MUNICÍPIO</th>
+                        <th>RESPONSÁVEL</th>
+                        <th class="text-center">AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for el, responsavel in eleitores %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ el.nome_completo }}</div>
+                            <small class="text-muted">Cadastrado em: {{ el.data_cadastro.strftime('%d/%m/%Y') }}</small>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ el.titulo_eleitoral }}</span> <br> <small>Z: {{ el.zona }} | S: {{ el.secao }}</small></td>
+                        <td><span class="text-uppercase small fw-bold">{{ el.municipio }}</span></td>
+                        <td><i class="bi bi-person-badge text-warning"></i> {{ responsavel }}</td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a href="{{ url_for('editar_eleitor', id=el.id) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-pencil"></i></a>
+                                {% if user.nivel in ['ADM', 'CANDIDATO'] %}
+                                <a href="{{ url_for('remover_eleitor', id=el.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Excluir este registro permanentemente?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-search fs-1 d-block mb-2"></i>
+                            Nenhum apoiador encontrado nesta busca.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-{% endif %}
-
-<div class="card-luxo p-4 mb-4 shadow-sm animate__animated animate__fadeInUp">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="fw-bold mb-0 gold-text text-uppercase small"><i class="bi bi-person-badge-fill me-2"></i>Apoiadores (Eleitores)</h5>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover align-middle" style="font-size: 0.85rem;">
-            <thead class="table-dark">
-                <tr>
-                    <th>NOME</th>
-                    <th>TÍTULO / ZONA / SEÇÃO</th>
-                    <th>MUNICÍPIO</th>
-                    <th>RESPONSÁVEL</th>
-                    <th class="text-end">AÇÃO</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for eleitor, lider_nome in eleitores %}
-                <tr>
-                    <td><div class="fw-bold text-dark">{{ eleitor.nome_completo }}</div></td>
-                    <td>
-                        <span class="badge bg-light text-dark border">T: {{ eleitor.titulo_eleitoral }}</span>
-                        <span class="badge bg-light text-dark border">Z: {{ eleitor.zona }}</span>
-                        <span class="badge bg-light text-dark border">S: {{ eleitor.secao }}</span>
-                    </td>
-                    <td>{{ eleitor.municipio }}</td>
-                    <td><span class="badge bg-info text-dark border-0">{{ lider_nome }}</span></td>
-                    <td class="text-end">
-                        {% if user.nivel == 'ADM' %}
-                        <a href="{{ url_for('remover_eleitor', id=eleitor.id) }}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('Excluir este eleitor?')">
-                            <i class="bi bi-trash3-fill"></i>
-                        </a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr><td colspan="5" class="text-center text-muted py-4">Nenhum registro encontrado nesta base.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="row g-2 mb-5">
-    <div class="col-6 col-md-3">
-        <a href="{{ url_for('novo_eleitor') }}" class="text-decoration-none">
-            <div class="card-luxo p-3 text-center h-100 hover-zoom">
-                <i class="bi bi-person-plus-fill gold-text fs-1 mb-2"></i>
-                <div class="fw-bold text-dark small">Novo Apoio</div>
-            </div>
-        </a>
-    </div>
-    <div class="col-6 col-md-3">
-        <a href="{{ url_for('saude_urgente') }}" class="text-decoration-none">
-            <div class="card-luxo p-3 text-center h-100 hover-zoom">
-                <i class="bi bi-heart-pulse-fill text-danger fs-1 mb-2"></i>
-                <div class="fw-bold text-dark small">Saúde</div>
-            </div>
-        </a>
-    </div>
-    <div class="col-6 col-md-3">
-        <a href="{{ url_for('compartilhar') }}" class="text-decoration-none">
-            <div class="card-luxo p-3 text-center h-100 hover-zoom">
-                <i class="bi bi-qr-code-scan text-success fs-1 mb-2"></i>
-                <div class="fw-bold text-dark small">Link Convite</div>
-            </div>
-        </a>
-    </div>
-    {% if user.nivel != 'LIDERANÇA' %}
-    <div class="col-6 col-md-3">
-        <a href="{{ url_for('lista_usuarios') }}" class="text-decoration-none">
-            <div class="card-luxo p-3 text-center h-100 hover-zoom">
-                <i class="bi bi-person-gear text-primary fs-1 mb-2"></i>
-                <div class="fw-bold text-dark small">Equipe</div>
-            </div>
-        </a>
-    </div>
-    {% endif %}
-</div>
-
-<style>
-    .hover-zoom { transition: 0.3s; border: 1px solid rgba(0,0,0,0.05); }
-    .hover-zoom:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.1) !important; background: #fffdf5; }
-    .text-gold { color: #D4AF37; }
-    .bg-dark { background-color: #0A192F !important; }
-    .table thead th { font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; border: none; }
-</style>
 {% endblock %}

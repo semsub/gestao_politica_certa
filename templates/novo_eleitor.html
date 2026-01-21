@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="animate__animated animate__fadeIn" style="max-width: 600px; margin: 0 auto; padding-bottom: 50px;">
+    
+    <div style="background: #1e293b; padding: 20px; border-radius: 15px; border: 1px solid #D4AF37; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <p style="color: white; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; opacity: 0.8;">Compartilhe essa força por Salinas:</p>
+        <button onclick="enviarWhatsApp()" style="background: #25d366; color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s;">
+            <i class="bi bi-whatsapp" style="font-size: 1.5rem; margin-right: 10px;"></i> ENVIAR PELO WHATSAPP
+        </button>
+    </div>
+
+    <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-top: 5px solid #D4AF37;">
+        <div style="text-align: center; margin-bottom: 25px;">
+            <h2 style="font-weight: 900; color: #1e293b; margin-bottom: 5px; text-transform: uppercase; letter-spacing: -1px;">CADASTRO AMIGO</h2>
+            <p style="color: #6c757d; font-size: 0.9rem; font-weight: 500;">Preencha seus dados abaixo</p>
+        </div>
+
+        <form action="{{ url_for('novo_eleitor') }}" method="POST">
+            <div class="mb-3">
+                <label class="form-label fw-bold small text-uppercase" style="color: #1e293b;">Nome Completo</label>
+                <input type="text" name="nome_completo" class="form-control form-control-lg" style="background: #f8f9fa; border-radius: 10px; border: 1px solid #ddd; font-size: 1rem;" placeholder="Seu nome" required>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label fw-bold small text-uppercase">Título Eleitoral</label>
+                    <input type="text" name="titulo_eleitoral" class="form-control" style="background: #f8f9fa; border-radius: 8px;" placeholder="Nº Título">
+                </div>
+                <div class="col-3">
+                    <label class="form-label fw-bold small text-uppercase">Zona</label>
+                    <input type="text" name="zona" class="form-control" style="background: #f8f9fa; border-radius: 8px;" placeholder="000">
+                </div>
+                <div class="col-3">
+                    <label class="form-label fw-bold small text-uppercase">Seção</label>
+                    <input type="text" name="secao" class="form-control" style="background: #f8f9fa; border-radius: 8px;" placeholder="000">
+                </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-8">
+                    <label class="form-label fw-bold small text-uppercase">Endereço</label>
+                    <input type="text" name="rua" class="form-control" style="background: #f8f9fa; border-radius: 8px;" placeholder="Rua/Av">
+                </div>
+                <div class="col-4">
+                    <label class="form-label fw-bold small text-uppercase">Nº</label>
+                    <input type="text" name="numero" class="form-control" style="background: #f8f9fa; border-radius: 8px;" placeholder="Ex: 12">
+                </div>
+            </div>
+
+            <div class="row g-2 mb-4">
+                <div class="col-6">
+                    <label class="form-label fw-bold small text-uppercase">Bairro</label>
+                    <input type="text" name="bairro" class="form-control" style="background: #f8f9fa; border-radius: 8px;" placeholder="Seu bairro">
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-bold small text-uppercase">Município</label>
+                    <select name="municipio" class="form-select" style="background: #f8f9fa; border-radius: 8px;">
+                        <option value="Salinópolis" selected>Salinópolis</option>
+                        {% for m in municipios %}
+                            {% if m != "Salinópolis" %}
+                            <option value="{{ m }}">{{ m }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark w-100 py-3 fw-bold text-uppercase shadow" style="background: #1e293b; border-radius: 12px; letter-spacing: 1px; border: none;">
+                Confirmar Cadastro
+            </button>
+        </form>
+    </div>
+
+    <div style="text-align: center; margin-top: 25px; opacity: 0.6;">
+        <p style="font-size: 0.7rem; color: #1e293b; font-weight: bold; margin-bottom: 0;">© 2026 JÚNIOR ARAÚJO SISTEMAS</p>
+        <p style="font-size: 0.6rem; color: #1e293b; text-transform: uppercase;">SISTEMA GESTÃO POLÍTICA CERTA</p>
+    </div>
+</div>
+
+<script>
+function enviarWhatsApp() {
+    // Pega o ID do usuário logado vindo do Python
+    const liderId = "{{ user.id if user else 1 }}";
+    // Monta o link para a página 2 (Template Externo)
+    const urlFormulario = window.location.origin + "/eleitor/novo?lider=" + liderId + "&template=externo";
+    
+    const texto = `Juntos somos mais fortes por Salinas! 🤝
+
+Amigos e amigas, vocês sabem que meu compromisso com a nossa gente não é de hoje. Seja nas ações de cidadania, no Dia das Crianças, no nosso Natal Solidário ou no suporte diário com consultas e cirurgias, meu foco sempre foi cuidar de quem mais precisa.
+
+Mas para que eu possa fazer ainda mais e trazer projetos maiores para Salinas e região, precisamos de organização. Criamos um novo Sistema de Gestão Política para cadastrar todos os nossos amigos e parceiros.
+
+Por que se cadastrar?
+- Para que eu tenha força política para cobrar melhorias junto ao governo.
+- Para facilitar o acesso a programas como o Cheque Moradia.
+- Atenção: Se surgirem novos benefícios e programas sociais, só conseguirei priorizar e ajudar quem estiver devidamente cadastrado no sistema.
+
+Não fique de fora! Clique no link abaixo e garanta que você e sua família façam parte dessa rede de cuidado:
+
+${urlFormulario}`;
+
+    const encodedText = encodeURIComponent(texto);
+    window.open("https://api.whatsapp.com/send?text=" + encodedText, '_blank');
+}
+</script>
+{% endblock %}
