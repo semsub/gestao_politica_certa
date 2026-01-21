@@ -11,15 +11,18 @@ app.secret_key = "230808Deus#"
 # --- CONFIGURAÇÕES DE DIRETÓRIOS (JÚNIOR ARAÚJO SISTEMAS) ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# AJUSTE DE CAMINHO PARA O RENDER
+# No Render, a escrita é restrita. Forçamos o caminho absoluto para evitar Erro 500.
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Garantir que a pasta de uploads existe (Corrigido para evitar IndentationError)
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Garantir que a pasta de uploads existe com tratamento de exceção para o servidor
+try:
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+except Exception as e:
+    print(f"Aviso: Erro ao criar pasta de uploads: {e}")
 
-# Configuração do Banco de Dados com persistência no Render
+# Configuração do Banco de Dados com persistência no Render (/data) ou Local
 if os.path.exists('/data'):
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/junior_araujo_sistemas.db'
 else:
@@ -282,9 +285,10 @@ def saude_urgente():
         fname = None
         if file and file.filename != '':
             fname = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
+            # Uso de caminho absoluto para o Render salvar o arquivo corretamente
             full_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
             file.save(full_path)
-        
+
         nova = AcaoSocial(
             eleitor_id=request.form.get('eleitor_id'),
             tipo=request.form.get('tipo', 'SAÚDE'),

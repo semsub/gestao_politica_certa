@@ -4,3 +4,4 @@ __pycache__/
 static/uploads/*
 !static/uploads/logo_default.png
 !static/uploads/default_bg.jpg
+junior_araujo_sistemas.db
