@@ -11,15 +11,16 @@ app.secret_key = "230808Deus#"
 # --- CONFIGURAÇÕES DE DIRETÓRIOS (JÚNIOR ARAÚJO SISTEMAS) ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# No Render, usamos o /opt/render/project/src/static/uploads para evitar erro de permissão
+# AJUSTE DE CAMINHO PARA O RENDER
+# Usamos caminhos absolutos para evitar que o servidor se perca ao salvar arquivos de saúde
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Garantir que a pasta de uploads existe antes do servidor iniciar
+# Garantir que a pasta de uploads existe (Crítico para não dar Erro 500)
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Configuração do Banco de Dados com persistência
+# Configuração do Banco de Dados com persistência no Render
 if os.path.exists('/data'):
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/junior_araujo_sistemas.db'
 else:
@@ -282,7 +283,10 @@ def saude_urgente():
         fname = None
         if file and file.filename != '':
             fname = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+            # GARANTIA DE CAMINHO ABSOLUTO PARA O RENDER
+            full_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
+            file.save(full_path)
+        
         nova = AcaoSocial(
             eleitor_id=request.form.get('eleitor_id'),
             tipo=request.form.get('tipo', 'SAÚDE'),
@@ -291,8 +295,11 @@ def saude_urgente():
             documento=fname,
             status='Aguardando'
         )
-        db.session.add(nova); db.session.commit()
+        db.session.add(nova)
+        db.session.commit()
         flash("Ação registrada com sucesso!", "success")
+        return redirect(url_for('saude_urgente'))
+
     ids_vistos = get_hierarquia_ids(u.id) if u.nivel != 'ADM' else [usr.id for usr in Usuario.query.all()]
     eleitores = Eleitor.query.filter(Eleitor.lider_id.in_(ids_vistos)).all()
     acoes_raw = db.session.query(AcaoSocial, Eleitor).join(Eleitor).filter(Eleitor.lider_id.in_(ids_vistos)).order_by(AcaoSocial.data_registro.desc()).all()
