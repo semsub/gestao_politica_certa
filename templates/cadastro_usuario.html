@@ -1,21 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container-fluid mt-2">
-    <div class="card card-luxo p-4 shadow animate__animated animate__fadeIn" style="border-radius: 20px; border: none;">
+<div class="container mt-4">
+    <div class="card card-luxo p-4 shadow-sm animate__animated animate__fadeIn">
         <h4 class="fw-bold gold-text text-uppercase mb-4">
-            <i class="bi bi-person-plus-fill me-2"></i>Cadastrar Membro
+            <i class="bi bi-person-plus-fill me-2"></i>Cadastrar Membro da Equipe
         </h4>
 
         <form action="{{ url_for('cadastro_usuario') }}" method="POST">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-secondary">NOME COMPLETO</label>
-                    <input type="text" name="nome" class="form-control rounded-pill border-warning" placeholder="Ex: João Silva" required>
+                    <label class="form-label fw-bold">Nome do Membro</label>
+                    <input type="text" name="nome" class="form-control" placeholder="Nome Completo" required>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-secondary">NÍVEL DE ACESSO</label>
-                    <select name="nivel" id="nivel_select" class="form-select rounded-pill border-warning" required onchange="ajustarCampos()">
+                    <label class="form-label fw-bold">Nível de Acesso</label>
+                    <select name="nivel" id="nivel_select" class="form-select" required onchange="ajustarCampos()">
                         <option value="" selected disabled>Selecione...</option>
                         {% if user.nivel == 'ADM' %}
                         <option value="CANDIDATO">CANDIDATO</option>
@@ -28,26 +28,23 @@
                     </select>
                 </div>
 
-                <div class="col-md-6" id="div_cargo" style="display: none;">
-                    <label class="form-label small fw-bold text-secondary">CARGO DISPUTADO</label>
-                    <select name="cargo" id="cargo_select" class="form-select rounded-pill border-warning" onchange="ajustarCampos()">
-                        <optgroup label="Cargos Municipais">
-                            <option value="VEREADOR">VEREADOR</option>
-                            <option value="PREFEITO">PREFEITO</option>
-                        </optgroup>
-                        <optgroup label="Cargos Estaduais/Federais">
-                            <option value="DEPUTADO ESTADUAL">DEPUTADO ESTADUAL</option>
-                            <option value="DEPUTADO FEDERAL">DEPUTADO FEDERAL</option>
-                            <option value="GOVERNADOR">GOVERNADOR</option>
-                            <option value="SENADOR">SENADOR</option>
-                        </optgroup>
+                <div class="col-md-4" id="div_cargo" style="display: none;">
+                    <label class="form-label fw-bold">Cargo</label>
+                    <select name="cargo" id="cargo_select" class="form-select" onchange="ajustarCampos()">
+                        <option value="VEREADOR">VEREADOR</option>
+                        <option value="PREFEITO">PREFEITO</option>
+                        <option value="DEPUTADO ESTADUAL">DEPUTADO ESTADUAL</option>
+                        <option value="DEPUTADO FEDERAL">DEPUTADO FEDERAL</option>
+                        <option value="GOVERNADOR">GOVERNADOR</option>
+                        <option value="SENADOR">SENADOR</option>
+                        <option value="PRESIDENTE">PRESIDENTE</option>
                     </select>
                 </div>
 
-                <div class="col-md-6" id="div_municipio">
-                    <label class="form-label small fw-bold text-secondary">MUNICÍPIO / BASE</label>
-                    <select name="municipio" id="municipio_select" class="form-select rounded-pill border-warning">
-                        <option value="">Selecione a cidade do Pará...</option>
+                <div class="col-md-4" id="div_municipio">
+                    <label class="form-label fw-bold">Município de Atuação</label>
+                    <select name="municipio" id="municipio_select" class="form-select">
+                        <option value="" selected disabled>Selecione a cidade</option>
                         {% for m in municipios %}
                         <option value="{{ m }}">{{ m }}</option>
                         {% endfor %}
@@ -55,20 +52,18 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-secondary">LOGIN DE ACESSO</label>
-                    <input type="text" name="login" class="form-control rounded-pill border-warning" placeholder="usuario.nome" required>
+                    <label class="form-label fw-bold">Login (Usuário)</label>
+                    <input type="text" name="login" class="form-control" required>
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label small fw-bold text-secondary">SENHA</label>
-                    <input type="text" name="senha" class="form-control rounded-pill border-warning" placeholder="Crie uma senha" required>
+                    <label class="form-label fw-bold">Senha</label>
+                    <input type="text" name="senha" class="form-control" required>
                 </div>
             </div>
 
-            <div class="mt-4 pb-3">
-                <button type="submit" class="btn btn-ouro w-100 py-3 text-uppercase shadow fw-bold">
-                    <i class="bi bi-check-circle me-2"></i>Finalizar Cadastro de Equipe
-                </button>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-warning fw-bold w-100 py-3 text-uppercase">Finalizar Cadastro</button>
             </div>
         </form>
     </div>
@@ -82,12 +77,13 @@ function ajustarCampos() {
     const divMunicipio = document.getElementById('div_municipio');
     const municipioSelect = document.getElementById('municipio_select');
 
-    // Lista de cargos Estaduais/Federais que não precisam de município fixo
-    const cargosEstaduaisFederais = [
-        'DEPUTADO ESTADUAL',
-        'DEPUTADO FEDERAL',
-        'GOVERNADOR',
-        'SENADOR'
+    // Lista de cargos que NÃO devem escolher município
+    const cargosSemMunicipio = [
+        'DEPUTADO ESTADUAL', 
+        'DEPUTADO FEDERAL', 
+        'GOVERNADOR', 
+        'SENADOR', 
+        'PRESIDENTE'
     ];
 
     // 1. Mostrar/Esconder campo de Cargo
@@ -95,34 +91,26 @@ function ajustarCampos() {
         divCargo.style.display = 'block';
     } else {
         divCargo.style.display = 'none';
-        divCargo.querySelector('select').value = "";
     }
 
-    // 2. Lógica do Município (Regras do Júnior):
-    // - Candidato Estadual/Federal: OCULTA municípios.
-    // - Candidato Municipal: MOSTRA municípios.
-    // - Liderança/Coordenador: SEMPRE MOSTRA para saber a origem.
-    
-    if (nivel === 'CANDIDATO' && cargosEstaduaisFederais.includes(cargo)) {
+    // 2. Lógica para mostrar/esconder campo de Município
+    // Esconde se for CANDIDATO e estiver em um dos cargos da lista "Sem Município"
+    if (nivel === 'CANDIDATO' && cargosSemMunicipio.includes(cargo)) {
         divMunicipio.style.display = 'none';
         municipioSelect.removeAttribute('required');
-        municipioSelect.value = ""; 
+        municipioSelect.value = ""; // Limpa a seleção se ocultar
     } else {
         divMunicipio.style.display = 'block';
         municipioSelect.setAttribute('required', 'required');
     }
 }
 
-// Inicializa a lógica ao carregar
-document.addEventListener('DOMContentLoaded', ajustarCampos);
+// Executar ao carregar a página para garantir o estado inicial correto
+window.onload = ajustarCampos;
 </script>
 
 <style>
+    .card-luxo { border-radius: 20px; border: none; background: white; }
     .gold-text { color: #D4AF37; }
-    .btn-ouro { background: linear-gradient(45deg, #B8860B, #D4AF37); color: white; border: none; }
-    .form-control:focus, .form-select:focus { 
-        box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
-        border-color: #D4AF37;
-    }
 </style>
 {% endblock %}

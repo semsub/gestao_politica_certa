@@ -1,86 +1,31 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="animate__animated animate__fadeIn">
-    <div class="card-luxo p-4 mb-3 text-center" style="background: #1e293b; color: white;">
-        <i class="bi bi-share-fill gold-text fs-1 mb-2"></i>
-        <h2 class="fw-bold mb-0 text-uppercase">ENVIAR CONVITE</h2>
-        <p class="text-warning mb-0 small">EXPANDA SUA BASE EM SALINAS</p>
-    </div>
+<div class="container text-center py-5 animate__animated animate__fadeIn">
+    <div class="card-luxo p-5 d-inline-block shadow-lg" style="max-width: 500px;">
+        <i class="bi bi-qr-code-scan gold-text display-1"></i>
+        <h2 class="fw-bold mt-4">Expanda sua Base</h2>
+        <p class="text-muted">Gere seu link exclusivo e envie para novos eleitores se cadastrarem na sua rede.</p>
+        
+        <div class="input-group mb-4 shadow-sm">
+            <input type="text" value="{{ link }}" id="meuLink" class="form-control border-0 bg-light p-3" readonly>
+            <button class="btn btn-dark px-4" onclick="copy()">Copiar</button>
+        </div>
 
-    <div class="d-grid gap-2 mb-4">
-        <button onclick="compartilharWhatsApp()" class="btn btn-success btn-lg shadow-lg py-3 fw-bold animate__animated animate__pulse animate__infinite" style="border-radius: 15px; border-bottom: 5px solid #198754;">
-            <i class="bi bi-whatsapp me-2 fs-4"></i> ENVIAR AGORA POR WHATSAPP
-        </button>
-    </div>
-
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card-luxo p-4">
-                <div class="p-3 rounded mb-3" style="background: #fdfaf0; border: 1px solid rgba(212, 175, 55, 0.3);">
-                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-chat-left-text-fill gold-text me-2"></i>MENSAGEM QUE SERÁ ENVIADA:</h6>
-                    </div>
-                    
-                    <p class="small text-secondary mb-0" id="mensagemPrevia" style="white-space: pre-line; line-height: 1.6;">
-                        Juntos somos mais fortes por Salinas! 🤝
-
-                        Amigos e amigas, vocês sabem que meu compromisso com a nossa gente não é de hoje. Seja nas ações de cidadania, no Dia das Crianças, no nosso Natal Solidário ou no suporte diário com consultas e cirurgias, meu foco sempre foi cuidar de quem mais precisa.
-
-                        Mas para que eu possa fazer ainda mais e trazer projetos maiores para Salinas e região, precisamos de organização. Criamos um novo Sistema de Gestão Política para cadastrar todos os nossos amigos e parceiros.
-
-                        Por que se cadastrar?
-                        - Para que eu tenha força política para cobrar melhorias junto ao governo.
-                        - Para facilitar o acesso a programas como o Cheque Moradia.
-                        - Atenção: Se surgirem novos benefícios e programas sociais, só conseguirei priorizar e ajudar quem estiver devidamente cadastrado no sistema.
-
-                        Não fique de fora! Clique no link abaixo e garanta que você e sua família façam parte dessa rede de cuidado.
-                    </p>
-                </div>
-
-                {% set link_final = request.url_root.rstrip('/') + "/eleitor/novo?lider=" ~ user.id ~ "&template=externo" %}
-                
-                <div class="d-grid">
-                    <button onclick="copiarLink('{{ link_final }}')" class="btn btn-outline-dark rounded-pill py-2 fw-bold mb-3">
-                        <i class="bi bi-clipboard-check me-2"></i> COPIAR APENAS O LINK DO FORMULÁRIO
-                    </button>
-                </div>
-                
-                <div class="bg-light p-2 rounded text-center border">
-                    <small class="text-muted d-block" style="font-size: 0.7rem;">LINK DO SEU FORMULÁRIO:</small>
-                    <code class="text-primary small" style="word-break: break-all;">{{ link_final }}</code>
-                </div>
-            </div>
+        <div class="d-grid gap-2">
+            <a href="https://wa.me/?text=Olá! É uma honra ter você conosco. Sua adesão fortalece nossa caminhada por um Pará melhor. Juntos somos mais fortes! Cadastre-se aqui: {{ link }}" 
+               target="_blank" class="btn btn-success py-3 rounded-pill fw-bold">
+               <i class="bi bi-whatsapp me-2"></i> ENVIAR NO WHATSAPP
+            </a>
         </div>
     </div>
 </div>
 
 <script>
-function compartilharWhatsApp() {
-    const link = "{{ link_final }}";
-    const texto = `Juntos somos mais fortes por Salinas! 🤝
-
-Amigos e amigas, vocês sabem que meu compromisso com a nossa gente não é de hoje. Seja nas ações de cidadania, no Dia das Crianças, no nosso Natal Solidário ou no suporte diário com consultas e cirurgias, meu foco sempre foi cuidar de quem mais precisa.
-
-Mas para que eu possa fazer ainda mais e trazer projetos maiores para Salinas e região, precisamos de organização. Criamos um novo Sistema de Gestão Política para cadastrar todos os nossos amigos e parceiros.
-
-Por que se cadastrar?
-- Para que eu tenha força política para cobrar melhorias junto ao governo.
-- Para facilitar o acesso a programas como o Cheque Moradia.
-- Atenção: Se surgirem novos benefícios e programas sociais, só conseguirei priorizar e ajudar quem estiver devidamente cadastrado no sistema.
-
-Não fique de fora! Clique no link abaixo e garanta que você e sua família façam parte dessa rede de cuidado:
-
-${link}`;
-
-    const encodedText = encodeURIComponent(texto);
-    window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
-}
-
-function copiarLink(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert("Link copiado com sucesso! Agora você pode colar no Facebook ou em grupos.");
-    });
+function copy() {
+    var copyText = document.getElementById("meuLink");
+    copyText.select();
+    navigator.clipboard.writeText(copyText.value);
+    alert("Link Copiado!");
 }
 </script>
 {% endblock %}

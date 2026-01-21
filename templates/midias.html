@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold">Central de Mídias</h2>
+    <h2 class="fw-bold gold-text">Central de Mídias</h2>
     {% if user.nivel in ['ADM', 'CANDIDATO'] %}
-    <button class="btn btn-ouro shadow" data-bs-toggle="modal" data-bs-target="#modalUpload">
+    <button class="btn btn-gold shadow" data-bs-toggle="modal" data-bs-target="#modalUpload">
         <i class="bi bi-upload"></i> Novo Upload
     </button>
     {% endif %}
@@ -12,20 +12,31 @@
 <div class="row">
     {% for m in midias %}
     <div class="col-md-4 mb-4">
-        <div class="card-luxo h-100 overflow-hidden shadow-sm">
+        <div class="card-luxo h-100 overflow-hidden shadow-sm position-relative">
+            
+            {% if user.nivel in ['ADM', 'CANDIDATO'] %}
+            <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
+                <a href="/midia/remover/{{ m.id }}" 
+                   class="btn btn-danger btn-sm rounded-circle shadow" 
+                   onclick="return confirm('Deseja excluir permanentemente este arquivo?')">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+            {% endif %}
+
             <div class="bg-dark d-flex align-items-center justify-content-center" style="height: 200px;">
-                {% if m.arquivo.endswith('.mp4') %}
-                    <video width="100%" controls>
+                {% if m.arquivo.lower().endswith('.mp4') %}
+                    <video width="100%" height="100%" controls style="background: black;">
                         <source src="/static/uploads/{{ m.arquivo }}" type="video/mp4">
                     </video>
                 {% else %}
                     <img src="/static/uploads/{{ m.arquivo }}" class="w-100 h-100" style="object-fit: cover;">
                 {% endif %}
             </div>
-            <div class="p-3 text-center">
-                <h6 class="fw-bold">{{ m.titulo }}</h6>
-                <hr>
-                <div class="d-flex justify-content-around align-items-center">
+            <div class="p-3 text-center bg-black">
+                <h6 class="fw-bold gold-text">{{ m.titulo }}</h6>
+                <hr class="border-secondary">
+                <div class="d-flex justify-content-around">
                     <a href="https://wa.me/?text=Confira nosso material: {{ request.url_root }}static/uploads/{{ m.arquivo }}"
                        target="_blank" class="btn btn-sm btn-success rounded-circle">
                         <i class="bi bi-whatsapp"></i>
@@ -34,14 +45,9 @@
                        target="_blank" class="btn btn-sm btn-primary rounded-circle">
                         <i class="bi bi-facebook"></i>
                     </a>
-                    <a href="/static/uploads/{{ m.arquivo }}" download class="btn btn-sm btn-dark rounded-circle">
+                    <a href="/static/uploads/{{ m.arquivo }}" download class="btn btn-sm btn-outline-light rounded-circle">
                         <i class="bi bi-download"></i>
                     </a>
-                    {% if user.nivel in ['ADM', 'CANDIDATO'] %}
-                    <a href="/midia/remover/{{ m.id }}" class="btn btn-sm btn-danger rounded-circle" onclick="return confirm('Deseja excluir esta mídia?')">
-                        <i class="bi bi-trash"></i>
-                    </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -49,7 +55,7 @@
     {% else %}
     <div class="col-12 text-center py-5">
         <i class="bi bi-camera-reels display-1 text-muted"></i>
-        <p class="mt-3">Nenhuma mídia disponível no momento.</p>
+        <p class="mt-3 text-secondary">Nenhuma mídia disponível no momento.</p>
     </div>
     {% endfor %}
 </div>
@@ -59,20 +65,20 @@
         <form class="modal-content card-luxo p-3" method="POST" enctype="multipart/form-data" action="/midia/gerenciar">
             <div class="modal-header border-0">
                 <h5 class="modal-title gold-text fw-bold">ENVIAR ARQUIVO</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="small fw-bold">TÍTULO DA MÍDIA</label>
-                    <input type="text" name="titulo" class="form-control rounded-pill" placeholder="Ex: Campanha 2024" required>
+                    <label class="small fw-bold text-secondary">TÍTULO DA MÍDIA</label>
+                    <input type="text" name="titulo" class="form-control bg-dark text-white border-secondary" placeholder="Ex: Campanha 2026" required>
                 </div>
                 <div class="mb-3">
-                    <label class="small fw-bold">ARQUIVO (IMG/MP4)</label>
-                    <input type="file" name="arquivo" class="form-control rounded-pill" required>
+                    <label class="small fw-bold text-secondary">ARQUIVO (IMG/MP4)</label>
+                    <input type="file" name="arquivo" class="form-control bg-dark text-white border-secondary" required>
                 </div>
             </div>
             <div class="modal-footer border-0">
-                <button type="submit" class="btn btn-ouro w-100 py-2">SUBIR MÍDIA</button>
+                <button type="submit" class="btn btn-gold w-100 py-2">SUBIR MÍDIA</button>
             </div>
         </form>
     </div>

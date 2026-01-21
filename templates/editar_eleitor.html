@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-2 animate__animated animate__fadeIn">
+    
+    <div class="card card-luxo bg-dark text-white border-warning p-3 mb-3 shadow-lg" style="border-radius: 15px;">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="fw-bold text-uppercase mb-0" style="color: #D4AF37;">
+                <i class="bi bi-pencil-square me-2"></i>ATUALIZAR CADASTRO
+            </h4>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light btn-sm fw-bold">VOLTAR</a>
+        </div>
+    </div>
+
+    <form action="{{ url_for('editar_eleitor', id=eleitor.id) }}" method="POST">
+        <div class="row g-3">
+            
+            <div class="col-lg-6">
+                <div class="card bg-dark border-secondary p-4 h-100 shadow" style="border-radius: 20px;">
+                    <h5 class="gold-text fw-bold mb-4 border-bottom border-secondary pb-2">DADOS IDENTIFICADORES</h5>
+                    
+                    <div class="mb-3">
+                        <label class="small fw-bold text-warning">NOME COMPLETO</label>
+                        <input type="text" name="nome_completo" class="form-control bg-secondary text-white border-0 py-2" value="{{ eleitor.nome }}" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="small fw-bold text-warning">TÍTULO ELEITORAL</label>
+                            <input type="number" name="titulo_eleitoral" class="form-control bg-secondary text-white border-0 py-2" value="{{ eleitor.titulo_eleitoral }}" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="small fw-bold text-warning">ZONA</label>
+                            <input type="number" name="zona" class="form-control bg-secondary text-white border-0 py-2" value="{{ eleitor.zona }}" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="small fw-bold text-warning">SEÇÃO</label>
+                            <input type="number" name="secao" class="form-control bg-secondary text-white border-0 py-2" value="{{ eleitor.secao }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small fw-bold text-warning">MUNICÍPIO (BASE PARAENSE)</label>
+                        <select name="municipio" class="form-select bg-secondary text-white border-0 py-2">
+                            {% for m in municipios %}
+                            <option value="{{ m }}" {% if eleitor.municipio == m %}selected{% endif %}>{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card bg-dark border-secondary p-4 h-100 shadow" style="border-radius: 20px;">
+                    <h5 class="gold-text fw-bold mb-4 border-bottom border-secondary pb-2">HISTÓRICO E STATUS</h5>
+                    
+                    <div class="mb-4">
+                        <label class="small fw-bold text-warning d-block mb-2">ENGAJAMENTO NAS AÇÕES</label>
+                        <div class="list-group">
+                            <label class="list-group-item bg-black border-secondary text-white d-flex justify-content-between align-items-center mb-1 rounded-3">
+                                <span><i class="bi bi-heart-pulse-fill text-danger me-2"></i>AÇÃO DE SAÚDE</span>
+                                <input class="form-check-input bg-dark border-warning" type="checkbox" name="acao_saude" {% if eleitor.saude %}checked{% endif %}>
+                            </label>
+                            <label class="list-group-item bg-black border-secondary text-white d-flex justify-content-between align-items-center mb-1 rounded-3">
+                                <span><i class="bi bi-person-arms-up text-info me-2"></i>AÇÃO CIDADÃ</span>
+                                <input class="form-check-input bg-dark border-warning" type="checkbox" name="acao_cidada" {% if eleitor.cidada %}checked{% endif %}>
+                            </label>
+                            <label class="list-group-item bg-black border-secondary text-white d-flex justify-content-between align-items-center mb-1 rounded-3">
+                                <span><i class="bi bi-gift-fill text-warning me-2"></i>NATAL SOLIDÁRIO</span>
+                                <input class="form-check-input bg-dark border-warning" type="checkbox" name="natal_solidario" {% if eleitor.natal %}checked{% endif %}>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="small fw-bold text-warning">OBSERVAÇÕES DO LÍDER</label>
+                        <textarea name="observacoes" class="form-control bg-secondary text-white border-0" rows="4">{{ eleitor.obs }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 mt-4 mb-5">
+                <div class="card-luxo p-3 bg-dark border-warning shadow-lg text-center" style="border-radius: 15px;">
+                    <button type="submit" class="btn btn-ouro btn-lg w-100 fw-bold py-3 text-uppercase">
+                        <i class="bi bi-save2-fill me-2"></i>Atualizar Registro no Sistema
+                    </button>
+                    <small class="text-secondary mt-2 d-block">Última modificação registrada pelo administrador.</small>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<style>
+    .gold-text { color: #D4AF37; }
+    .btn-ouro { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #000; border: none; }
+    .btn-ouro:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.4); color: white; }
+    .form-check-input:checked { background-color: #D4AF37 !important; border-color: #D4AF37 !important; }
+    .list-group-item { transition: 0.3s; }
+    .list-group-item:hover { background-color: #2c3036 !important; }
+</style>
+{% endblock %}

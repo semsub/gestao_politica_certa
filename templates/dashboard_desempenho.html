@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-2 animate__animated animate__fadeIn">
+    
+    <div class="card card-luxo bg-dark text-white border-warning p-4 mb-4 shadow-lg" style="border-radius: 20px;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="fw-bold gold-text text-uppercase mb-1">
+                    <i class="bi bi-graph-up-arrow me-2"></i>DESEMPENHO DA HIERARQUIA
+                </h3>
+                <p class="text-secondary small mb-0">Controle de produtividade de Coordenadores, Líderes e registros de base.</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="badge bg-ouro text-dark p-2 px-3 rounded-pill fw-bold">
+                    PERÍODO: ELEIÇÕES 2026
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-6 col-lg-3">
+            <div class="card bg-dark border-secondary p-3 shadow-sm h-100" style="border-radius: 15px;">
+                <h2 class="gold-text fw-bold mb-0">{{ total_equipe }}</h2>
+                <small class="text-uppercase text-secondary" style="font-size: 0.7rem;">Equipe (Membros)</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-dark border-secondary p-3 shadow-sm h-100" style="border-radius: 15px;">
+                <h2 class="text-info fw-bold mb-0">{{ total_familias }}</h2>
+                <small class="text-uppercase text-secondary" style="font-size: 0.7rem;">Famílias Cadastradas</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-dark border-secondary p-3 shadow-sm h-100" style="border-radius: 15px;">
+                <h2 class="text-success fw-bold mb-0">{{ total_pessoas }}</h2>
+                <small class="text-uppercase text-secondary" style="font-size: 0.7rem;">Pessoas (Eleitores)</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-dark border-secondary p-3 shadow-sm h-100" style="border-radius: 15px;">
+                <h2 class="text-warning fw-bold mb-0">{{ total_municipios }}</h2>
+                <small class="text-uppercase text-secondary" style="font-size: 0.7rem;">Municípios Atuantes</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-luxo bg-dark text-white border-secondary shadow-lg mb-4" style="border-radius: 20px;">
+        <div class="card-header bg-transparent border-secondary p-3">
+            <h5 class="mb-0 gold-text fw-bold"><i class="bi bi-trophy me-2"></i>RANKING DE PRODUTIVIDADE</h5>
+        </div>
+        <div class="table-responsive p-2">
+            <table class="table table-dark table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                <thead>
+                    <tr style="color: #D4AF37; border-bottom: 2px solid #D4AF37;">
+                        <th>MEMBRO / CARGO</th>
+                        <th>BASE / MUNICÍPIO</th>
+                        <th class="text-center">FAMÍLIAS</th>
+                        <th class="text-center">PESSOAS</th>
+                        <th class="text-center">DESEMPENHO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lider in ranking %}
+                    <tr class="border-secondary">
+                        <td>
+                            <div class="fw-bold text-white text-uppercase">{{ lider.nome }}</div>
+                            <div class="small gold-text">{{ lider.nivel }}</div>
+                            <small class="text-secondary">Pai: {{ lider.superior }}</small>
+                        </td>
+                        <td>
+                            <span class="text-info"><i class="bi bi-geo-alt"></i> {{ lider.municipio if lider.municipio else 'BASE GERAL' }}</span>
+                        </td>
+                        <td class="text-center fw-bold">{{ lider.qtd_familias }}</td>
+                        <td class="text-center fw-bold text-success">{{ lider.qtd_pessoas }}</td>
+                        <td class="text-center">
+                            <div class="progress bg-black border border-secondary" style="height: 10px; border-radius: 5px;">
+                                <div class="progress-bar bg-warning shadow" role="progressbar" 
+                                     style="width: {{ lider.percentual }}%;" 
+                                     aria-valuenow="{{ lider.percentual }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            <small style="font-size: 0.65rem;">{{ lider.percentual }}% da meta</small>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">Nenhum dado de desempenho disponível na hierarquia.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-5">
+        <div class="col-md-6">
+            <div class="card bg-primary bg-opacity-10 border-primary p-4 h-100" style="border-radius: 20px; border-style: dashed;">
+                <h5 class="text-primary fw-bold"><i class="bi bi-megaphone me-2"></i>NOTIFICAR EQUIPE</h5>
+                <p class="small text-secondary">Envie informativos ou metas para todos os líderes cadastrados via WhatsApp.</p>
+                <a href="https://wa.me/?text=Olá equipe, vamos conferir as metas da semana no sistema!" target="_blank" class="btn btn-primary w-100 fw-bold">ENVIAR MENSAGEM COLETIVA</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-success bg-opacity-10 border-success p-4 h-100" style="border-radius: 20px; border-style: dashed;">
+                <h5 class="text-success fw-bold"><i class="bi bi-file-earmark-pdf me-2"></i>RELATÓRIO PDF</h5>
+                <p class="small text-secondary">Gere um documento final com os números consolidados para impressão.</p>
+                <button class="btn btn-success w-100 fw-bold" onclick="window.print()">IMPRIMIR RESUMO</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-ouro { background-color: #D4AF37; }
+    .gold-text { color: #D4AF37; }
+    .card-luxo { background-color: #1a1d21 !important; }
+    .table-dark { --bs-table-bg: transparent; }
+    .table-hover tbody tr:hover { background-color: rgba(212, 175, 55, 0.08) !important; }
+    
+    /* Otimização para impressão do relatório */
+    @media print {
+        .sidebar, .mobile-header, .btn, footer { display: none !important; }
+        main { margin-left: 0 !important; padding: 0 !important; }
+        .card { border: 1px solid #000 !important; color: #000 !important; background: #fff !important; }
+        .gold-text { color: #000 !important; }
+    }
+</style>
+{% endblock %}

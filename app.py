@@ -8,34 +8,37 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "230808Deus#"
 
-# --- CONFIGURAÇÕES DE DIRETÓRIOS (JÚNIOR ARAÚJO SISTEMAS) ---
+# --- CONFIGURAÇÕES PARA PERSISTÊNCIA NO RENDER ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Banco de dados na raiz do projeto
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
+if os.path.exists('/data'):
+    # Configuração para Produção (Render com Disco Persistente)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/junior_araujo_sistemas.db'
+    app.config['UPLOAD_FOLDER'] = '/data/static/uploads'
+else:
+    # Configuração para Desenvolvimento Local
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
+    app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static', 'uploads')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Pasta de uploads (Fotos e Documentos)
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# Garante que a pasta de uploads exista
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 db = SQLAlchemy(app)
 
-# --- MODELOS (ESTRUTURA COMPLETA) ---
+# --- MODELOS (BANCO DE DADOS) ---
 
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     login = db.Column(db.String(50), unique=True, nullable=False)
     senha = db.Column(db.String(50), nullable=False)
-    nivel = db.Column(db.String(20)) # ADM, CANDIDATO, COORDENADOR, LIDER
+    nivel = db.Column(db.String(20)) # ADM, CANDIDATO, COORDENADOR, LIDERANÇA
     cargo = db.Column(db.String(50))
     municipio = db.Column(db.String(100))
     pai_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
-    meta_cadastros = db.Column(db.Integer, default=0)
     foto_perfil = db.Column(db.String(200), default='logo_default.png')
     fundo_login = db.Column(db.String(200), default='default_bg.jpg')
 
@@ -55,10 +58,10 @@ class Eleitor(db.Model):
 class AcaoSocial(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     eleitor_id = db.Column(db.Integer, db.ForeignKey('eleitor.id'))
-    tipo = db.Column(db.String(50)) # AÇÃO CIDADÃ, NATAL SOLIDÁRIO, SAÚDE
-    servico = db.Column(db.String(100)) # Exames, Cirurgias, etc.
+    tipo = db.Column(db.String(50)) # Saúde, Social, etc.
+    servico = db.Column(db.String(100))
     descricao = db.Column(db.Text)
-    status = db.Column(db.String(50), default='Aguardando')
+    status = db.Column(db.String(50), default='AGUARDANDO ATENDIMENTO')
     documento = db.Column(db.String(200))
     data_registro = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -66,7 +69,6 @@ class Despesa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     valor = db.Column(db.Float, nullable=False)
     descricao = db.Column(db.String(200))
-    beneficiario = db.Column(db.String(150))
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     lancado_por = db.Column(db.Integer)
     data = db.Column(db.DateTime, default=datetime.utcnow)
@@ -77,7 +79,7 @@ class Midia(db.Model):
     arquivo = db.Column(db.String(200))
     criado_por = db.Column(db.Integer)
 
-# --- LISTAS OFICIAIS (144 MUNICÍPIOS DO PARÁ) ---
+# --- LISTAS OFICIAIS ---
 
 MUNICIPIOS_PA = [
     "Abaetetuba", "Abel Figueiredo", "Acará", "Afuá", "Água Azul do Norte", "Alenquer", "Almeirim", "Altamira",
@@ -105,10 +107,10 @@ MUNICIPIOS_PA = [
     "Ulianópolis", "Uruará", "Vigia", "Viseu", "Vitória do Xingu", "Xinguara"
 ]
 
-SERVICOS_SAUDE = [
-    "Agendamento de Exames", "Agendamento de Consultas", "Agendamento de Cirurgias",
-    "Leito de UTI", "Medicamentos", "Óculos", "Viagem para Consulta",
-    "Busca de Alta Médica", "Nenhuma das Anteriores"
+SERVICOS_SAUDE_SOCIAL = [
+    "UTI", "Cirurgia", "Exame Complexo", "Ressonância", "Tomografia", "Consultas em Geral", 
+    "Consulta Especializada", "Medicamento", "Cesta Básica", "Cadeira de Rodas", "Auxílio Funeral", 
+    "Natal Solidário", "Ação Cidadã", "Dia das Crianças", "Jurídico", "Documentação", "Outros"
 ]
 
 # --- FUNÇÕES DE AUXÍLIO ---
@@ -120,14 +122,7 @@ def get_user():
         return Usuario.query.get(session['user_id'])
     return None
 
-def get_hierarquia_ids(usuario_id):
-    ids = [usuario_id]
-    subordinados = Usuario.query.filter_by(pai_id=usuario_id).all()
-    for sub in subordinados:
-        ids.extend(get_hierarquia_ids(sub.id))
-    return ids
-
-# --- ROTAS (LAYOUT LIMPO E OTIMIZADO) ---
+# --- ROTAS DO SISTEMA ---
 
 @app.route('/')
 def index():
@@ -153,37 +148,51 @@ def login():
 def dashboard():
     u = get_user()
     if not u: return redirect(url_for('login'))
-    
+
     municipio_filtro = request.args.get('municipio')
-    
-    if u.nivel == 'ADM':
-        ids_vistos = [usr.id for usr in Usuario.query.all()]
+
+    if u.nivel in ['ADM', 'CANDIDATO']:
+        query_eleitores = db.session.query(Eleitor, Usuario.nome).join(Usuario, Eleitor.lider_id == Usuario.id)
+        if municipio_filtro:
+            query_eleitores = query_eleitores.filter(Eleitor.municipio == municipio_filtro)
+        eleitores_lista = query_eleitores.all()
+
         total_eleitores = Eleitor.query.count()
         total_equipe = Usuario.query.filter(Usuario.login != 'junior.araujo21').count()
     else:
-        # CANDIDATO vê tudo da sua hierarquia
-        ids_vistos = get_hierarquia_ids(u.id)
-        total_eleitores = Eleitor.query.filter(Eleitor.lider_id.in_(ids_vistos)).count()
-        total_equipe = Usuario.query.filter(Usuario.id.in_(ids_vistos), Usuario.id != u.id).count()
+        equipe = Usuario.query.filter_by(pai_id=u.id).all()
+        ids_equipe = [m.id for m in equipe] + [u.id]
 
-    query_eleitores = db.session.query(Eleitor, Usuario).join(Usuario, Eleitor.lider_id == Usuario.id).filter(Eleitor.lider_id.in_(ids_vistos))
-    
-    if municipio_filtro:
-        query_eleitores = query_eleitores.filter(Eleitor.municipio == municipio_filtro)
+        query_eleitores = db.session.query(Eleitor, Usuario.nome).join(Usuario, Eleitor.lider_id == Usuario.id).filter(Eleitor.lider_id.in_(ids_equipe))
+        eleitores_lista = query_eleitores.all()
 
-    eleitores_raw = query_eleitores.all()
-    ranking = db.session.query(Usuario.nome, db.func.count(Eleitor.id).label('total')).join(Eleitor, Eleitor.lider_id == Usuario.id).filter(Usuario.id.in_(ids_vistos)).group_by(Usuario.id).order_by(db.text('total DESC')).limit(5).all()
+        total_eleitores = len(eleitores_lista)
+        total_equipe = len(equipe)
 
-    return render_template('dashboard.html', user=u, total_eleitores=total_eleitores, total_equipe=total_equipe, ranking=ranking, eleitores=eleitores_raw, municipios=MUNICIPIOS_PA)
+    # Ranking unificado (Top 5 Lideranças por volume de cadastros)
+    if u.nivel in ['ADM', 'CANDIDATO']:
+        ranking_query = db.session.query(Usuario.nome, db.func.count(Eleitor.id).label('total'))\
+            .join(Eleitor, Eleitor.lider_id == Usuario.id)\
+            .group_by(Usuario.id).order_by(db.text('total DESC')).limit(5).all()
+    else:
+        ranking_query = db.session.query(Usuario.nome, db.func.count(Eleitor.id).label('total'))\
+            .join(Eleitor, Eleitor.lider_id == Usuario.id)\
+            .filter(Usuario.id.in_(ids_equipe))\
+            .group_by(Usuario.id).order_by(db.text('total DESC')).limit(5).all()
+
+    return render_template('dashboard.html', user=u, total_eleitores=total_eleitores, total_equipe=total_equipe, ranking=ranking_query, eleitores=eleitores_lista, municipios=MUNICIPIOS_PA)
+
+@app.route('/compartilhar')
+def compartilhar():
+    u = get_user()
+    lideranca_nome = u.nome if u else "JUNIOR ARAÚJO"
+    return render_template('cadastro_apoiador_externo.html', lideranca=lideranca_nome, municipios=MUNICIPIOS_PA, user=u)
 
 @app.route('/eleitor/novo', methods=['GET', 'POST'])
 def novo_eleitor():
     u = get_user()
-    lider_id_url = request.args.get('lider', type=int)
-    u_lider = Usuario.query.get(lider_id_url) if lider_id_url else u
-    
     if request.method == 'POST':
-        lider_final = request.form.get('lider_id') or (u.id if u else 1)
+        lider_id = u.id if u else 1
         novo = Eleitor(
             nome_completo=request.form.get('nome_completo'),
             titulo_eleitoral=request.form.get('titulo_eleitoral'),
@@ -193,83 +202,89 @@ def novo_eleitor():
             numero=request.form.get('numero'),
             bairro=request.form.get('bairro'),
             municipio=request.form.get('municipio'),
-            lider_id=lider_final
+            lider_id=lider_id
         )
-        db.session.add(novo); db.session.commit()
-        if u:
-            flash("Cadastro realizado!", "success")
-            return redirect(url_for('dashboard'))
-        return "<h1>Sucesso!</h1>"
-    
-    return render_template('cadastro_eleitor.html', user=u, municipios=MUNICIPIOS_PA)
-
-@app.route('/eleitor/editar/<int:id>', methods=['GET', 'POST'])
-def editar_eleitor(id):
-    u = get_user()
-    eleitor = Eleitor.query.get_or_404(id)
-    if request.method == 'POST':
-        eleitor.nome_completo = request.form.get('nome_completo')
-        eleitor.titulo_eleitoral = request.form.get('titulo_eleitoral')
-        eleitor.zona = request.form.get('zona')
-        eleitor.secao = request.form.get('secao')
-        eleitor.rua = request.form.get('rua')
-        eleitor.numero = request.form.get('numero')
-        eleitor.bairro = request.form.get('bairro')
-        eleitor.municipio = request.form.get('municipio')
+        db.session.add(novo)
         db.session.commit()
-        flash("Registro atualizado!", "success")
-        return redirect(url_for('dashboard'))
-    return render_template('editar_eleitor.html', eleitor=eleitor, user=u, municipios=MUNICIPIOS_PA)
-
-@app.route('/eleitor/remover/<int:id>')
-def remover_eleitor(id):
-    u = get_user()
-    if u and (u.nivel in ['ADM', 'CANDIDATO']):
-        eleitor = Eleitor.query.get(id)
-        if eleitor:
-            db.session.delete(eleitor); db.session.commit()
-            flash("Removido com sucesso!", "success")
-    return redirect(url_for('dashboard'))
+        if u:
+            flash("Eleitor cadastrado com sucesso!", "success")
+            return redirect(url_for('dashboard'))
+        else:
+            return "<h1>Obrigado pelo seu apoio! Cadastro realizado com sucesso.</h1>"
+    return render_template('cadastro_eleitor.html', user=u, municipios=MUNICIPIOS_PA)
 
 @app.route('/usuarios/lista')
 def lista_usuarios():
     u = get_user()
-    if not u: return redirect(url_for('login'))
-    
+    if not u or u.nivel == 'LIDERANÇA':
+        flash("Acesso não permitido", "danger")
+        return redirect(url_for('dashboard'))
+
     if u.nivel == 'ADM':
-        usuarios = Usuario.query.all()
+        lista = Usuario.query.filter(Usuario.login != 'junior.araujo21').all()
     else:
-        ids_vistos = get_hierarquia_ids(u.id)
-        usuarios = Usuario.query.filter(Usuario.id.in_(ids_vistos)).all()
-        
-    usuarios_info = []
-    for usr in usuarios:
-        pai = Usuario.query.get(usr.pai_id) if usr.pai_id else None
-        usuarios_info.append({'obj': usr, 'pai_nome': pai.nome if pai else "SISTEMA"})
-        
-    return render_template('lista_usuarios.html', usuarios=usuarios_info, user=u)
+        lista = Usuario.query.filter_by(pai_id=u.id).all()
+
+    return render_template('lista_usuarios.html', usuarios=lista, user=u)
+
+@app.route('/usuarios/remover/<int:id>')
+def remover_usuario(id):
+    u = get_user()
+    if u and u.nivel == 'ADM':
+        usuario = Usuario.query.get(id)
+        if usuario:
+            db.session.delete(usuario)
+            db.session.commit()
+            flash("Usuário removido com sucesso!", "success")
+    return redirect(url_for('lista_usuarios'))
+
+@app.route('/eleitor/remover/<int:id>')
+def remover_eleitor(id):
+    u = get_user()
+    if u and u.nivel == 'ADM':
+        eleitor = Eleitor.query.get(id)
+        if eleitor:
+            db.session.delete(eleitor)
+            db.session.commit()
+            flash("Eleitor removido com sucesso!", "success")
+    return redirect(url_for('dashboard'))
 
 @app.route('/usuarios/novo', methods=['GET', 'POST'])
 def cadastro_usuario():
     u = get_user()
     if not u: return redirect(url_for('login'))
-    
+
     if request.method == 'POST':
         novo = Usuario(
-            nome=request.form.get('nome'), 
+            nome=request.form.get('nome'),
             login=request.form.get('login'),
-            senha=request.form.get('senha'), 
+            senha=request.form.get('senha'),
             nivel=request.form.get('nivel'),
-            cargo=request.form.get('cargo'), 
+            cargo=request.form.get('cargo'),
             municipio=request.form.get('municipio'),
-            meta_cadastros=request.form.get('meta', 0), 
             pai_id=u.id
         )
-        db.session.add(novo); db.session.commit()
-        flash("Novo membro cadastrado!", "success")
+        db.session.add(novo)
+        db.session.commit()
+        flash("Membro cadastrado com sucesso!", "success")
         return redirect(url_for('lista_usuarios'))
-        
+
     return render_template('cadastro_usuario.html', user=u, municipios=MUNICIPIOS_PA)
+
+@app.route('/perfil/foto', methods=['POST'])
+def alterar_foto_perfil():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    file = request.files.get('foto_perfil')
+    if file:
+        filename = secure_filename(f"user_{u.id}_{file.filename}")
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        u.foto_perfil = filename
+        db.session.commit()
+        flash("Foto de perfil atualizada!", "success")
+    return redirect(url_for('dashboard'))
+
+# --- ROTAS DE GABINETE (SAÚDE / SOCIAL) ---
 
 @app.route('/saude/urgente', methods=['GET', 'POST'])
 def saude_urgente():
@@ -278,38 +293,111 @@ def saude_urgente():
     
     if request.method == 'POST':
         file = request.files.get('documento')
-        fname = None
-        if file and file.filename != '':
-            fname = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
-
+        fname = secure_filename(file.filename) if file else None
+        if fname: file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+        
         nova = AcaoSocial(
-            eleitor_id=request.form.get('eleitor_id'),
-            tipo=request.form.get('tipo', 'SAÚDE'),
+            eleitor_id=request.form.get('eleitor_id'), 
             servico=request.form.get('servico'),
-            descricao=request.form.get('descricao'),
+            descricao=request.form.get('descricao'), 
             documento=fname
         )
-        db.session.add(nova); db.session.commit()
-        flash("Ação de saúde registrada!", "success")
-        return redirect(url_for('saude_urgente'))
+        db.session.add(nova)
+        db.session.commit()
+        flash("Solicitação enviada!", "success")
 
-    ids_vistos = get_hierarquia_ids(u.id) if u.nivel != 'ADM' else [usr.id for usr in Usuario.query.all()]
-    eleitores = Eleitor.query.filter(Eleitor.lider_id.in_(ids_vistos)).all()
-    acoes_raw = db.session.query(AcaoSocial, Eleitor).join(Eleitor).filter(Eleitor.lider_id.in_(ids_vistos)).order_by(AcaoSocial.data_registro.desc()).all()
-    
-    return render_template('urgente.html', user=u, eleitores=eleitores, acoes=acoes_raw, servicos=SERVICOS_SAUDE)
+    if u.nivel in ['ADM', 'CANDIDATO']:
+        urgencias = db.session.query(AcaoSocial, Eleitor).join(Eleitor).all()
+        eleitores = Eleitor.query.all()
+    else:
+        eleitores = Eleitor.query.filter_by(lider_id=u.id).all()
+        urgencias = db.session.query(AcaoSocial, Eleitor).join(Eleitor).filter(Eleitor.lider_id == u.id).all()
+
+    return render_template('urgente.html', user=u, eleitores=eleitores, urgencias=urgencias, servicos=SERVICOS_SAUDE_SOCIAL)
+
+@app.route('/saude/status/<int:id>', methods=['POST'])
+def alterar_status_saude(id):
+    u = get_user()
+    if u and u.nivel in ['ADM', 'CANDIDATO']:
+        acao = AcaoSocial.query.get(id)
+        if acao:
+            acao.status = request.form.get('novo_status')
+            db.session.commit()
+            flash("Status atualizado com sucesso!", "success")
+    return redirect(url_for('saude_urgente'))
+
+# --- MÍDIA E DESPESAS ---
+
+@app.route('/midia/gerenciar', methods=['GET', 'POST'])
+def gerenciar_midia():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    if request.method == 'POST' and u.nivel in ['ADM', 'CANDIDATO']:
+        file = request.files.get('arquivo')
+        if file:
+            fname = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], fname))
+            nova = Midia(titulo=request.form.get('titulo'), arquivo=fname, criado_por=u.id)
+            db.session.add(nova)
+            db.session.commit()
+    midias = Midia.query.all()
+    return render_template('midias.html', user=u, midias=midias)
+
+@app.route('/midia/remover/<int:id>')
+def remover_midia(id):
+    u = get_user()
+    if u and u.nivel in ['ADM', 'CANDIDATO']:
+        midia = Midia.query.get(id)
+        if midia:
+            path = os.path.join(app.config['UPLOAD_FOLDER'], midia.arquivo)
+            if os.path.exists(path):
+                os.remove(path)
+            db.session.delete(midia)
+            db.session.commit()
+            flash("Mídia removida!", "success")
+    return redirect(url_for('gerenciar_midia'))
+
+@app.route('/despesas/lancar', methods=['GET', 'POST'])
+def lancar_despesas():
+    u = get_user()
+    if not u: return redirect(url_for('login'))
+    if request.method == 'POST':
+        nova = Despesa(valor=float(request.form.get('valor')), descricao=request.form.get('descricao'), usuario_id=u.id, lancado_por=u.id)
+        db.session.add(nova)
+        db.session.commit()
+        flash("Despesa lançada!", "success")
+        return redirect(url_for('dashboard'))
+    return render_template('lancar_despesa.html', user=u)
+
+@app.route('/adm/config', methods=['GET', 'POST'])
+def adm_config():
+    u = get_user()
+    if not u or u.nivel != 'ADM':
+        flash("Acesso restrito", "danger")
+        return redirect(url_for('dashboard'))
+    u_master = Usuario.query.filter_by(login='junior.araujo21').first()
+    if request.method == 'POST':
+        f_p = request.files.get('perfil'); f_b = request.files.get('fundo')
+        if f_p:
+            n_p = secure_filename(f_p.filename); f_p.save(os.path.join(app.config['UPLOAD_FOLDER'], n_p)); u_master.foto_perfil = n_p
+        if f_b:
+            n_b = secure_filename(f_b.filename); f_b.save(os.path.join(app.config['UPLOAD_FOLDER'], n_b)); u_master.fundo_login = n_b
+        db.session.commit()
+        flash("Configurações salvas!", "success")
+    return render_template('config_adm.html', user=u)
 
 @app.route('/logout')
 def logout():
-    session.clear(); return redirect(url_for('login'))
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         if not Usuario.query.filter_by(login='junior.araujo21').first():
             master = Usuario(nome="JUNIOR ARAUJO", login="junior.araujo21", senha="230808Deus#", nivel="ADM")
-            db.session.add(master); db.session.commit()
-    
+            db.session.add(master)
+            db.session.commit()
+
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
