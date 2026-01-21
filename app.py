@@ -11,22 +11,24 @@ app.secret_key = "230808Deus#"
 # --- CONFIGURAÇÕES DE DIRETÓRIOS (JÚNIOR ARAÚJO SISTEMAS) ---
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# No Render, a escrita é restrita. Forçamos o caminho absoluto para evitar Erro 500.
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Garantir que a pasta de uploads existe com tratamento de exceção para o servidor
-try:
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-except Exception as e:
-    print(f"Aviso: Erro ao criar pasta de uploads: {e}")
-
-# Configuração do Banco de Dados com persistência no Render (/data) ou Local
+# CORREÇÃO PARA O RENDER: O sistema precisa gravar na pasta /data para persistência
 if os.path.exists('/data'):
+    # Caminho para o Render (Disco Persistente)
+    UPLOAD_FOLDER = '/data/uploads'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////data/junior_araujo_sistemas.db'
 else:
+    # Caminho para o seu computador (Local)
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'junior_araujo_sistemas.db')
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Garantir que a pasta de uploads existe (Tratamento de erro para o Render)
+if not os.path.exists(UPLOAD_FOLDER):
+    try:
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    except Exception as e:
+        print(f"Erro ao criar pasta de uploads: {e}")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -39,8 +41,8 @@ class Usuario(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     login = db.Column(db.String(50), unique=True, nullable=False)
     senha = db.Column(db.String(50), nullable=False)
-    nivel = db.Column(db.String(20)) 
-    cargo = db.Column(db.String(50)) 
+    nivel = db.Column(db.String(20))
+    cargo = db.Column(db.String(50))
     municipio = db.Column(db.String(100))
     pai_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     meta_cadastros = db.Column(db.Integer, default=0)
@@ -63,7 +65,7 @@ class Eleitor(db.Model):
 class AcaoSocial(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     eleitor_id = db.Column(db.Integer, db.ForeignKey('eleitor.id'))
-    tipo = db.Column(db.String(50)) 
+    tipo = db.Column(db.String(50))
     servico = db.Column(db.String(100))
     descricao = db.Column(db.Text)
     status = db.Column(db.String(50), default='Aguardando')
@@ -285,7 +287,7 @@ def saude_urgente():
         fname = None
         if file and file.filename != '':
             fname = secure_filename(f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-            # Uso de caminho absoluto para o Render salvar o arquivo corretamente
+            # Caminho absoluto configurado dinamicamente para o Render ou Local
             full_path = os.path.join(app.config['UPLOAD_FOLDER'], fname)
             file.save(full_path)
 
